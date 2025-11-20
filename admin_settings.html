@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <aside>
+        <h1>Code Sense</h1>
+        <p>Admin Panel</p>
+        <nav>
+            <ul>
+              <li><a href="#">Dashboard</a></li>
+              <li><a href="#">User Management</li>
+              <li><a href="#">Logs</a></li>
+              <li><a href="#">Model Settings</a></li>
+            </ul>
+        </nav>
+        <footer>
+            <div>
+                <p>Admin User</p>
+                <p>admin@codesense.ai</p>
+            </div>
+        </footer>
+    </aside>
+    <main>
+        <header>
+            <h1>Model Settings</h1>
+            <p>Configure AI model parameters</p>
+            <nav>
+                <div>
+                    <a href="#">User View</a>
+                    <a href="#">Log out</a>
+                </div>
+            </nav>
+        </header>
+        <section>
+            <div>
+                <h2>Explanation length</h2>
+                <p>Default length for generated explanations</p>
+                <select id="length">
+                    <option value="concise">Concise (50-100 words)</option>
+                    <option value="medium">Medium Length (100-200 words)</option>
+                    <option value="detailed">Detailed (200-300 words)</option>
+                </select>
+            </div>
+            <div>
+                <h2>Model Temperature</h2>
+                <p>Controls randomness in responses(0-1)</p>
+                <div></div>
+                <span>More Deterministic</span>
+                <span>0.7</span>
+                <span>More Creative</span>
+            </div>
+            <div>
+                <h2>Max Tokens</h2>
+                <p>Maximum tokens for response generation</p>
+                <div>500</div>
+            </div>
+            <div>
+                <h2>Enable Code Syntax Highlighting</h2>
+                <p>Show syntax highlighting in explanations</p>
+                <input type="checkbox" value="yes" id="highlight">
+                <label for="highlight">Enable highlighting</label>
+            </div>
+        </section>
+        <footer>
+            <buttton>Save Settings</buttton>
+        </footer>
+    </main>
+</body>
+</html>
