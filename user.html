@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User - CodeSense</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root{
+            --bg: #050816;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --panel-bg: #020617;
+            --border: #1f2937;
+            --input-bg: #020617;
+            --accent-start: #22c55e;
+            --accent-end: #16a34a;
+            --button-text: #020617;
+            --th-bg: #020617;
+            --row-even: #020617;
+            --row-odd: #030712;
+        }
+
+        html[data-theme="light"], body[data-theme="light"] {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --muted: #475569;
+            --panel-bg: #ffffff;
+            --border: #e6eef6;
+            --input-bg: #ffffff;
+            --accent-start: #16a34a;
+            --accent-end: #059669;
+            --button-text: #ffffff;
+            --th-bg: #f8fafc;
+            --row-even: #ffffff;
+            --row-odd: #f4f7fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        nav {
+            margin-bottom: 16px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--muted);
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: var(--text);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        h3 {
+            font-size: 18px;
+            margin-top: 18px;
+            margin-bottom: 6px;
+        }
+
+        p {
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        form {
+            margin-top: 10px;
+            margin-bottom: 18px;
+            padding: 14px;
+            border-radius: 8px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            max-width: 640px;
+        }
+
+        label {
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        select {
+            padding: 6px 8px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--input-bg);
+            color: var(--text);
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--accent-start);
+        }
+
+        textarea {
+            margin-top: 4px;
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--input-bg);
+            color: var(--text);
+            padding: 8px 10px;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-start);
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+            color: var(--button-text);
+            font-weight: 500;
+            margin-top: 6px;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 32px rgba(34, 197, 94, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.5);
+        }
+
+        table {
+            width: 100%;
+            max-width: 640px;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        th, td {
+            border: 1px solid #1f2937;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text);
+            background-color: var(--th-bg);
+        }
+
+        td {
+            color: var(--muted);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--row-even);
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: var(--row-odd);
+        }
+        /* Layout helpers */
+        .container{max-width:1100px;margin:0 auto;padding:0 18px;}
+
+        .site-header{padding:18px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+        .site-header .container{display:flex;align-items:center;justify-content:space-between;gap:16px}
+        .brand h1{font-size:20px;margin-bottom:4px}
+        .brand .tagline{font-size:12px;color:var(--muted)}
+
+        .main-nav{display:flex;align-items:center;gap:16px}
+        .main-nav .links a{display:inline-block;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none}
+        .main-nav .links a:hover{background:rgba(255,255,255,0.03);color:var(--text)}
+
+        .nav-actions{display:flex;align-items:center;gap:8px}
+
+        .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 18px rgba(2,6,23,0.4);margin-top:12px}
+
+        label{display:block;margin-bottom:6px;font-weight:600;color:var(--text)}
+
+        select,input,textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:var(--input-bg);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+
+        .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:var(--muted)}
+        .btn-ghost:hover{background:rgba(255,255,255,0.02);color:var(--text)}
+
+        button[type="button"]{background:linear-gradient(135deg,var(--accent-start),var(--accent-end));color:var(--button-text);padding:10px 14px;border-radius:10px;border:none}
+
+        .output p{color:var(--muted);line-height:1.5}
+
+        .history-table{width:100%;border-collapse:collapse;margin-top:8px}
+        .history-table th,.history-table td{padding:10px;border-bottom:1px solid rgba(0,0,0,0.04)}
+        .history-table thead th{background:transparent;text-align:left}
+
+        @media (max-width:640px){
+            .site-header .container{flex-direction:column;align-items:flex-start}
+            .main-nav .links{display:flex;flex-wrap:wrap}
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <div class="brand">
+                <h1>CodeSense</h1>
+                <div class="tagline">Readable code explanations</div>
+            </div>
+
+            <nav class="main-nav">
+                <div class="links">
+                    <a href="index.html">Home</a>
+                    <a href="user.html">User</a>
+                    <a href="user_settings.html">User Settings</a>
+                    <a href="admin.html">Admin</a>
+                </div>
+                <div class="nav-actions">
+                    <button id="theme-toggle" class="btn-ghost">Toggle Theme</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+    <hr>
+
+    <h2>User Dashboard</h2>
+    <p>Paste your code below to get an easy to understand explanation.</p>
+
+    <form class="card">
+        <label>Language:</label><br>
+        <select>
+            <option>Auto</option>
+            <option>Python</option>
+            <option>JavaScript</option>
+            <option>Java</option>
+            <option>C++</option>
+            <option>C</option>
+        </select>
+        <br><br>
+
+        <label>Code:</label><br>
+        <textarea rows="10" cols="60" placeholder="Paste your code here"></textarea>
+        <br><br>
+
+        <button type="button">Explain Code</button>
+    </form>
+
+    <section class="card output">
+        <h3>Explanation Output</h3>
+        <p>No explanation yet.</p>
+    </section>
+
+    <hr>
+
+    <section class="card">
+        <h3>History</h3>
+        <table class="history-table">
+            <thead>
+            <tr>
+                <th>Snippet</th>
+                <th>Language</th>
+                <th>Detail</th>
+                <th>Time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>No history yet</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    </main>
+
+</body>
+<script>
+    (function(){
+        const html = document.documentElement;
+        const body = document.body;
+        const toggle = document.getElementById('theme-toggle');
+
+        function applyTheme(theme){
+            if(!theme) return;
+            if(theme === 'light'){
+                html.setAttribute('data-theme','light');
+                body.setAttribute('data-theme','light');
+            } else {
+                html.removeAttribute('data-theme');
+                body.removeAttribute('data-theme');
+            }
+            localStorage.setItem('theme', theme);
+            updateToggleLabel(theme);
+        }
+
+        function updateToggleLabel(theme){
+            if(!toggle) return;
+            toggle.textContent = theme === 'light' ? 'Switch to Dark' : 'Switch to Light';
+        }
+
+        const saved = localStorage.getItem('theme');
+        if(saved){
+            applyTheme(saved);
+        } else {
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            applyTheme(prefersLight ? 'light' : 'dark');
+        }
+
+        if(toggle){
+            toggle.addEventListener('click', ()=>{
+                const current = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+                const next = current === 'light' ? 'dark' : 'light';
+                applyTheme(next);
+            });
+        }
+
+        window.addEventListener('storage', (e)=>{
+            if(e.key === 'theme') applyTheme(e.newValue);
+        });
+    })();
+</script>
+</html>

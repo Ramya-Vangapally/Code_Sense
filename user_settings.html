@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Settings - CodeSense</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root{
+            --bg: #050816;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --panel-bg: #020617;
+            --border: #1f2937;
+            --input-bg: #020617;
+            --accent-start: #22c55e;
+            --accent-end: #16a34a;
+            --button-text: #020617;
+        }
+
+        html[data-theme="light"], body[data-theme="light"] {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --muted: #475569;
+            --panel-bg: #ffffff;
+            --border: #e6eef6;
+            --input-bg: #ffffff;
+            --accent-start: #16a34a;
+            --accent-end: #059669;
+            --button-text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        nav {
+            margin-bottom: 16px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--muted);
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: var(--text);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        p {
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        form {
+            margin-top: 10px;
+            margin-bottom: 18px;
+            padding: 14px;
+            border-radius: 8px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            max-width: 640px;
+        }
+
+        label {
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .settings-group {
+            margin-bottom: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            padding: 6px 8px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--input-bg);
+            color: var(--text);
+            width: 100%;
+            max-width: 320px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-start);
+        }
+
+        input[type="checkbox"] {
+            margin-right: 6px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+            color: var(--button-text);
+            font-weight: 500;
+            margin-top: 6px;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 32px rgba(34, 197, 94, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.5);
+        }
+
+        small {
+            font-size: 13px;
+            color: var(--muted);
+        }
+    </style>
+        <style>
+            /* Additional layout styles to match the improved app look */
+            .container{max-width:1100px;margin:0 auto;padding:0 18px}
+            .site-header{padding:18px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
+            .site-header .container{display:flex;align-items:center;justify-content:space-between;gap:16px}
+            .brand h1{font-size:20px;margin-bottom:4px}
+            .brand .tagline{font-size:12px;color:var(--muted)}
+
+            .main-nav{display:flex;align-items:center;gap:16px}
+            .main-nav .links a{display:inline-block;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none}
+            .main-nav .links a:hover{background:rgba(0,0,0,0.03);color:var(--text)}
+
+            .nav-actions{display:flex;align-items:center;gap:8px}
+
+            .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 18px rgba(2,6,23,0.4);margin-top:12px}
+
+            label{display:block;margin-bottom:6px;font-weight:600;color:var(--text)}
+
+            select,input,textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:var(--input-bg);color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+
+            .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:var(--muted)}
+            .btn-ghost:hover{background:rgba(255,255,255,0.02);color:var(--text)}
+
+            button[type="button"]{background:linear-gradient(135deg,var(--accent-start),var(--accent-end));color:var(--button-text);padding:10px 14px;border-radius:10px;border:none}
+
+            @media (max-width:640px){
+                .site-header .container{flex-direction:column;align-items:flex-start}
+                .main-nav .links{display:flex;flex-wrap:wrap}
+            }
+        </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <div class="brand">
+                <h1>CodeSense</h1>
+                <div class="tagline">Preferences & account</div>
+            </div>
+
+            <nav class="main-nav">
+                <div class="links">
+                    <a href="index.html">Home</a>
+                    <a href="user.html">User</a>
+                    <a href="user_settings.html">User Settings</a>
+                    <a href="admin.html">Admin</a>
+                </div>
+                <div class="nav-actions">
+                    <a href="user.html" class="btn-ghost">Back</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+    <hr>
+
+    <h2>User Settings</h2>
+    <p>Manage your preferences for using CodeSense.</p>
+
+    <form class="card">
+        <div class="settings-group">
+            <label for="display-name">Display Name</label><br>
+            <input id="display-name" type="text" placeholder="Your name">
+        </div>
+
+        <div class="settings-group">
+            <label for="email">Email</label><br>
+            <input id="email" type="email" placeholder="you@example.com">
+        </div>
+
+        <div class="settings-group">
+            <label for="default-language">Preferred Code Language</label><br>
+            <select id="default-language">
+                <option>Auto</option>
+                <option>Python</option>
+                <option>JavaScript</option>
+                <option>Java</option>
+                <option>C++</option>
+                <option>C</option>
+            </select>
+        </div>
+
+        <div class="settings-group">
+            <label for="detail-level">Default Explanation Style</label><br>
+            <select id="detail-level">
+                <option>Short & Simple</option>
+                <option>Balanced</option>
+                <option>Step-by-step</option>
+            </select>
+        </div>
+
+        <div class="settings-group">
+            <label>History Settings</label><br>
+            <label>
+                <input type="checkbox" checked>
+                Save my recent code snippets
+            </label>
+        </div>
+
+        <div class="settings-group">
+            <label>Theme</label><br>
+            <select id="theme-select">
+                <option>Dark</option>
+                <option>Light</option>
+            </select>
+        </div>
+
+        <button type="button">Save Settings</button>
+    </form>
+
+    <h3>Status</h3>
+    <p>No changes saved yet.</p>
+
+    </main>
+
+</body>
+<script>
+    (function(){
+        const select = document.getElementById('theme-select');
+        const html = document.documentElement;
+        const body = document.body;
+
+        function applyTheme(theme){
+            if(theme === 'light'){
+                html.setAttribute('data-theme','light');
+                body.setAttribute('data-theme','light');
+            } else {
+                html.removeAttribute('data-theme');
+                body.removeAttribute('data-theme');
+            }
+        }
+
+        function setStored(theme){
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+        }
+
+        // initialize select and page from storage or system
+        const saved = localStorage.getItem('theme');
+        if(saved){
+            if(select) select.value = saved === 'light' ? 'Light' : 'Dark';
+            applyTheme(saved);
+        } else {
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            const initial = prefersLight ? 'light' : 'dark';
+            if(select) select.value = initial === 'light' ? 'Light' : 'Dark';
+            applyTheme(initial);
+        }
+
+        if(select){
+            select.addEventListener('change', ()=>{
+                const val = select.value === 'Light' ? 'light' : 'dark';
+                setStored(val);
+            });
+        }
+
+        // react to changes made in other tabs/pages
+        window.addEventListener('storage', (e)=>{
+            if(e.key === 'theme'){
+                const newVal = e.newValue === 'light' ? 'Light' : 'Dark';
+                if(select) select.value = newVal;
+                applyTheme(e.newValue);
+            }
+        });
+    })();
+</script>
+</html>
