@@ -1,0 +1,704 @@
+/* ===== Global Reset & Base ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-body: #f5f7fb;
+    --bg-card: #ffffff;
+    --bg-sidebar: #ffffff;
+    --border-subtle: #e4e7f0;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --accent: #6366f1;
+    --accent-soft: #eef2ff;
+    --accent-strong: #4f46e5;
+    --accent-gradient: linear-gradient(90deg, #6366f1, #a855f7);
+    --success: #22c55e;
+    --warning: #facc15;
+    --danger: #ef4444;
+    --radius-lg: 16px;
+    --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+    --shadow-light: 0 8px 20px rgba(15, 23, 42, 0.06);
+    --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-main);
+    background: var(--bg-body);
+    color: var(--text-main);
+    display: flex;
+}
+
+/* ===== Sidebar (Admin Pages) ===== */
+
+body > aside {
+    width: 260px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+body > aside h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+}
+
+body > aside p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+body > aside nav ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+body > aside nav a {
+    display: block;
+    text-decoration: none;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    border-radius: 999px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+body > aside nav a:hover,
+body > aside nav a:focus {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+body > aside footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.85rem;
+}
+
+/* ===== Main Layout (Admin Pages) ===== */
+
+body > main {
+    margin-left: 260px;
+    flex: 1;
+    padding: 24px 32px;
+}
+
+/* Header inside main (admin) */
+body > main > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+body > main > header h1 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+body > main > header p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+body > main > header nav div,
+body > main > header > div {
+    display: flex;
+    gap: 12px;
+}
+
+body > main > header a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    background: #fff;
+    box-shadow: var(--shadow-light);
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body > main > header a:hover {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: var(--shadow-soft);
+}
+
+/* ===== Dashboard – Stats Cards ===== */
+
+/* Wrapper for first group of divs after header on dashboard */
+body > main > header + div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+body > main > header + div > div {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body > main > header + div > div p:first-child {
+    font-size: 0.8rem;
+    color: var(--success);
+    font-weight: 600;
+    text-align: right;
+}
+
+body > main > header + div > div p:nth-child(2) {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+body > main > header + div > div h,
+body > main > header + div > div h2,
+body > main > header + div > div h3 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* ===== Dashboard – Chart Card ===== */
+
+.Chart {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-light);
+    min-height: 260px;
+    margin-bottom: 24px;
+    padding: 18px 20px;
+}
+
+/* ===== Dashboard – Popular Languages ===== */
+
+main h2 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+main > div:nth-of-type(3),
+/* generic section container after .Chart */
+main section {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-light);
+    padding: 18px 20px;
+    margin-bottom: 24px;
+}
+
+/* Specific for the Popular Languages list in dashboard */
+main > div:nth-of-type(3) ul {
+    list-style: none;
+    margin-top: 8px;
+}
+
+main > div:nth-of-type(3) li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+main > div:nth-of-type(3) li:last-child {
+    border-bottom: none;
+}
+
+main > div:nth-of-type(3) li span:first-child {
+    min-width: 90px;
+}
+
+main > div:nth-of-type(3) li div {
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Simple purple bar */
+main > div:nth-of-type(3) li div::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 70%;
+    background: var(--accent-gradient);
+}
+
+/* ===== Dashboard – Recent Operations ===== */
+
+main > div:last-of-type {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-light);
+    padding: 18px 20px;
+}
+
+main > div:last-of-type > p {
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* ===== Tables (Logs, Users, Recent Ops) ===== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+thead tr {
+    background: #f9fafb;
+}
+
+th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+tbody tr:hover {
+    background: #f3f4ff;
+}
+
+/* Status badges */
+td:nth-child(4) {
+    font-size: 0.8rem;
+}
+
+td:nth-child(4)::before {
+    content: attr(data-status);
+}
+
+/* You can instead add classes in HTML:
+   <td class="badge active">Active</td>
+*/
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge.active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge.inactive {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+/* Delete buttons / actions */
+table button {
+    border: none;
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* ===== Model Settings ===== */
+
+section > div {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-light);
+    padding: 16px 18px;
+    margin-bottom: 16px;
+}
+
+section > div h2 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+section > div p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+/* Select and inputs */
+select,
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+select:focus,
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+/* Slider placeholder */
+section > div:nth-of-type(2) > div {
+    height: 6px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    position: relative;
+    margin: 8px 0 4px;
+}
+
+section > div:nth-of-type(2) > div::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 70%;
+    border-radius: inherit;
+    background: var(--accent-gradient);
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+/* Save Settings button (footer of model settings) */
+main > footer {
+    margin-top: 12px;
+    text-align: right;
+}
+
+main > footer button,
+main > footer buttton {
+    /* 'buttton' handles the typo in HTML */
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.95rem;
+    color: #fff;
+    background-image: var(--accent-gradient);
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+}
+
+/* ===== Logs Page ===== */
+
+main section > div:first-of-type p {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* ===== User Management Page ===== */
+
+section > div:first-of-type {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+section > div:first-of-type h2 {
+    font-size: 1.1rem;
+}
+
+section > div:first-of-type button {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.9rem;
+    color: #fff;
+    background-image: var(--accent-gradient);
+    cursor: pointer;
+    box-shadow: var(--shadow-light);
+}
+
+/* ===== Landing Page (Marketing) ===== */
+
+body:not(:has(> aside)) {
+    /* When there is no sidebar (landing page), undo flex layout */
+    display: block;
+    background: #ffffff;
+}
+
+/* Top nav */
+body:not(:has(> aside)) header nav {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+body:not(:has(> aside)) header nav span {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--accent-strong);
+}
+
+body:not(:has(> aside)) header nav a {
+    text-decoration: none;
+    margin-left: 14px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+/* Hero section */
+body:not(:has(> aside)) main > section:first-of-type {
+    max-width: 1120px;
+    margin: 40px auto 24px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+body:not(:has(> aside)) main > section:first-of-type h1 {
+    font-size: 2.1rem;
+    max-width: 540px;
+}
+
+body:not(:has(> aside)) main > section:first-of-type p {
+    max-width: 540px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+body:not(:has(> aside)) main > section:first-of-type button {
+    margin-top: 10px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+body:not(:has(> aside)) main > section:first-of-type button:first-of-type {
+    background-image: var(--accent-gradient);
+    color: #fff;
+    box-shadow: var(--shadow-soft);
+    margin-right: 8px;
+}
+
+body:not(:has(> aside)) main > section:first-of-type button:last-of-type {
+    background: #ffffff;
+    border: 1px solid var(--border-subtle);
+}
+
+/* Code example + explanation block */
+body:not(:has(> aside)) main > section:nth-of-type(2) > div {
+    max-width: 1120px;
+    margin: 0 auto 32px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 18px 20px;
+}
+
+body:not(:has(> aside)) pre {
+    background: #0f172a;
+    color: #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}
+
+/* “Why choose” & “How it works” sections */
+body:not(:has(> aside)) main > section:nth-of-type(3),
+body:not(:has(> aside)) main > section:nth-of-type(4) {
+    max-width: 1120px;
+    margin: 0 auto 32px;
+    padding: 0 20px;
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(3) h2,
+body:not(:has(> aside)) main > section:nth-of-type(4) h2 {
+    margin-bottom: 12px;
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(3) > div,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(3) > div > div,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px 16px 18px;
+    box-shadow: var(--shadow-light);
+    font-size: 0.9rem;
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(4) h3 {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+/* Landing footer */
+body:not(:has(> aside)) footer {
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 32px;
+    padding: 24px 20px;
+    font-size: 0.9rem;
+}
+
+body:not(:has(> aside)) footer > div {
+    max-width: 1120px;
+    margin: 0 auto 12px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+body:not(:has(> aside)) footer > div:first-of-type {
+    align-items: center;
+}
+
+body:not(:has(> aside)) footer ul {
+    list-style: none;
+    margin-top: 6px;
+}
+
+body:not(:has(> aside)) footer li {
+    margin-bottom: 4px;
+}
+
+body:not(:has(> aside)) footer small {
+    display: block;
+    max-width: 1120px;
+    margin: 0 auto;
+    color: var(--text-muted);
+}
+
+/* ===== Improved Site Footer ===== */
+.site-footer {
+    border-top: 1px solid var(--border-subtle);
+    background: transparent;
+    padding: 32px 20px 20px;
+    color: var(--text-main);
+}
+.site-footer__inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+.footer-column h4 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+.footer-column ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.footer-column ul li {
+    margin-bottom: 8px;
+}
+.footer-column a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+.footer-column a:hover,
+.footer-column a:focus {
+    color: var(--accent-strong);
+}
+.footer-brand .brand-name {
+    display: block;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--accent-strong);
+    margin-bottom: 6px;
+}
+.footer-brand .brand-tag {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+.site-footer__bar {
+    max-width: 1120px;
+    margin: 18px auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+.site-footer__social a {
+    margin-right: 10px;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+@media (max-width: 880px) {
+    .site-footer__inner {
+        grid-template-columns: 1fr 1fr;
+    }
+    .site-footer__bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 520px) {
+    .site-footer__inner {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Aside footer small improvements ===== */
+.aside-footer a {
+    color: var(--text-main);
+    text-decoration: none;
+}
+.aside-footer a:hover,
+.aside-footer a:focus {
+    color: var(--accent-strong);
+}

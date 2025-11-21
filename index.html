@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>CodeSense</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
     <header>
@@ -77,36 +78,46 @@ function fibonacci(n) {
             </div>
         </section>
     </main>
-    <footer>
-        <div>
-            <span>CodeSense</span>
-            <span>Making code understanding accessible to everyone.</span>
+    <footer class="site-footer" role="contentinfo" aria-label="Site footer">
+        <div class="site-footer__inner">
+            <div class="footer-column footer-brand">
+                <span class="brand-name">CodeSense</span>
+                <p class="brand-tag">Making code understanding accessible to everyone.</p>
+            </div>
+
+            <nav class="footer-column footer-links" aria-label="Footer navigation">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">API</a></li>
+                </ul>
+            </nav>
+
+            <div class="footer-column footer-links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Docs</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column footer-contact">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:example@gmail.com">example@gmail.com</a></li>
+                    <li><a href="#" target="_blank" rel="noopener">GitHub</a></li>
+                    <li><a href="#" target="_blank" rel="noopener">Twitter</a></li>
+                </ul>
+            </div>
         </div>
-        <div>
-            <b>Product</b>
-            <ul>
-                <li>Features</li>
-                <li>Pricing</li>
-                <li>API</li>
-            </ul>
-        </div>
-        <div>
-            <b>Resources</b>
-            <ul>
-                <li>About</li>
-                <li>Docs</li>
-                <li>Blog</li>
-            </ul>
-        </div>
-        <div>
-            <b>Contact</b>
-            <ul>
-                <li>example@gmail.com</li>
-                <li>GitHub</li>
-                <li>Twitter</li>
-            </ul>
-        </div>
-        <div>
+
+        <div class="site-footer__bar">
+            <div class="site-footer__social" aria-hidden="false">
+                <a href="#" aria-label="GitHub">🐙</a>
+                <a href="#" aria-label="Twitter">🐦</a>
+            </div>
             <small>© 2025 CodeSense. All rights reserved.</small>
         </div>
     </footer>
