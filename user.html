@@ -161,30 +161,6 @@
             gap: 10px;
         }
 
-        .pill-status {
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(120deg, rgba(129,140,248,0.22), rgba(244,114,182,0.14));
-            color: #e5e7eb;
-        }
-
-        html[data-theme="light"] .pill-status {
-            background: linear-gradient(120deg, rgba(129,140,248,0.12), rgba(244,114,182,0.1));
-            color: #1f2937;
-        }
-
-        .pill-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
-        }
-
         .icon-btn {
             width: 32px;
             height: 32px;
@@ -363,79 +339,76 @@
             box-shadow: 0 10px 24px rgba(79,70,229,0.7);
         }
 
-        /* Right column: explanation + history */
-        .stack {
+        /* RIGHT PANEL: explanation + history via tabs */
+        .right-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
             gap: 12px;
-            height: 100%;
+        }
+
+        .right-tabs {
+            display: inline-flex;
+            background: rgba(15,23,42,0.7);
+            border-radius: 999px;
+            padding: 3px;
+        }
+
+        html[data-theme="light"] .right-tabs {
+            background: rgba(15,23,42,0.06);
+        }
+
+        .right-tab {
+            border: none;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .right-tab.active {
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+
+        html[data-theme="light"] .right-tab.active {
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 6px 16px rgba(148,163,184,0.4);
         }
 
         .explanation-body {
             border-radius: 12px;
-            border: 1px dashed rgba(148,163,184,0.45);
+            border: 1px solid rgba(148,163,184,0.25);
             padding: 14px 12px;
-            min-height: 185px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            min-height: 230px;
+            max-height: 360px;
+            overflow: auto;
         }
 
         .placeholder {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             color: var(--muted);
             font-size: 13px;
+            height: 100%;
+            text-align: center;
         }
 
         .placeholder-icon {
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 999px;
             border: 1px dashed rgba(148,163,184,0.55);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-        }
-
-        /* History card */
-        .history-card {
-            border-radius: 16px;
-            padding: 12px 10px;
-            border: 1px solid rgba(148,163,184,0.3);
-            background: radial-gradient(circle at 0 0, rgba(129,140,248,0.16), transparent 55%), rgba(15,23,42,0.9);
-        }
-
-        html[data-theme="light"] .history-card {
-            background: radial-gradient(circle at 0 0, rgba(129,140,248,0.09), transparent 55%), #f9fafb;
-        }
-
-        .history-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-
-        .history-header span {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .history-pill {
-            font-size: 11px;
-            color: var(--muted);
-            padding: 4px 8px;
-            border-radius: 999px;
-            background: rgba(15,23,42,0.5);
-        }
-
-        html[data-theme="light"] .history-pill {
-            background: rgba(255,255,255,0.9);
+            font-size: 18px;
         }
 
         .history-table {
@@ -464,6 +437,20 @@
             color: var(--muted);
         }
 
+        /* Bottom full-width button (like screenshot) */
+        .bottom-cta {
+            grid-column: 1 / -1;
+            margin-top: 18px;
+        }
+
+        .bottom-cta button {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 14px;
+        }
+
         @media (max-width: 900px){
             .workspace{
                 grid-template-columns: minmax(0,1fr);
@@ -473,7 +460,7 @@
         @media (max-width: 640px){
             body{padding: 14px;}
             .topbar{flex-direction: column; align-items: flex-start;}
-            .top-actions{align-self: stretch; justify-content: space-between;}
+            .top-actions{align-self: stretch; justify-content: flex-end;}
         }
     </style>
 </head>
@@ -502,10 +489,6 @@
         </div>
 
         <div class="top-actions">
-            <div class="pill-status">
-                <span class="pill-status-dot"></span>
-                <span>Downloading...</span>
-            </div>
             <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
             <button class="icon-btn" title="Profile">👤</button>
             <button class="icon-btn" title="Share">⤴</button>
@@ -549,42 +532,26 @@
 
             <div class="generator-footer">
                 <p class="hint-text">We’ll highlight key steps, loops, and conditions in simple language.</p>
-                <button type="button" class="btn-primary">
-                    <span class="icon">✨</span>
-                    <span>Generate Explanation</span>
-                </button>
             </div>
         </section>
 
-        <!-- RIGHT: Explanation + History side panel -->
-        <section class="stack">
-            <!-- Explanation card -->
-            <section class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">
-                        <div class="panel-icon">✶</div>
-                        <h2>Explanation</h2>
-                    </div>
-                    <div class="chip">
-                        <span>Preview</span>
-                    </div>
+        <!-- RIGHT: Explanation + History in side panel -->
+        <section class="panel">
+            <div class="panel-header right-header">
+                <div class="panel-title">
+                    <div class="panel-icon">✶</div>
+                    <h2>Explanation</h2>
                 </div>
+            </div>
 
-                <div class="explanation-body">
-                    <div class="placeholder">
-                        <div class="placeholder-icon">✨</div>
-                        <div>Your explanation will appear here</div>
-                    </div>
+            <div class="explanation-body" id="explanation-view">
+                <div class="placeholder">
+                    <div class="placeholder-icon">✨</div>
+                    <div>Your explanation will appear here</div>
                 </div>
-            </section>
+            </div>
 
-            <!-- History card on side, using table content -->
-            <section class="history-card">
-                <div class="history-header">
-                    <span>History</span>
-                    <div class="history-pill">Recent snippets</div>
-                </div>
-
+            <div class="explanation-body" id="history-view" style="display:none;">
                 <table class="history-table">
                     <thead>
                     <tr>
@@ -600,8 +567,16 @@
                     </tr>
                     </tbody>
                 </table>
-            </section>
+            </div>
         </section>
+
+        <!-- Bottom full-width CTA like screenshot -->
+        <div class="bottom-cta">
+            <button type="button" class="btn-primary">
+                <span class="icon">✨</span>
+                <span>Generate Explanation</span>
+            </button>
+        </div>
 
     </main>
 </div>
