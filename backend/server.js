@@ -34,6 +34,13 @@ app.post('/login', async (req, res)=> {
   });
 });
 
+app.post("/delete_user",async(req,res)=>{
+  const {username , password}=req.body
+  const user=await Login.findOne({username})
+  if(!user) return res.status(404).json({message: "User not found"});
+  Login.deleteOne({username})
+  return res.json({message:"user deleted successfully"})
+})
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

@@ -120,5 +120,16 @@
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());
     });
-
+    const delete_user=document.getElementById("delete_user");
+    delete_user.addEventListener("click",()=>{
+        const response=fetch("http://localhost:5000/delete",{
+            method:"POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body:JSON.stringify({username:u,password:p})
+        })
+        const result=response.json();
+        console.log(result.message)
+    })
 })();
