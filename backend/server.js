@@ -34,6 +34,15 @@ app.post('/login', async (req, res)=> {
   });
 });
 
+app.get('/get-users', async (req,res) => {
+  try{
+    const users = await Login.find({}, {password: 0});
+    res.json(users);
+  } catch(e){
+    res.status(404).json({message: e});
+  }
+})
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

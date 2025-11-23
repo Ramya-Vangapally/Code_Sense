@@ -108,7 +108,7 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', ()=>{
+    document.addEventListener('DOMContentLoaded', async ()=>{
         try{ initThemeControls(); }catch(e){}
 
         const dash = document.getElementById('dashboard-link');
@@ -119,6 +119,27 @@
 
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());
+
+        const tablebody = document.querySelector("tbody");
+        if(!tablebody) return;
+        try{
+            const res = await fetch("http://localhost:5000/get-users");
+            const result = await res.json();
+            tablebody.innerHTML="";
+            result.forEach(user=>{
+                const tr = document.createElement("tr");
+                tr.innerHTML= `
+                    <td>${user.username}</td>
+                    <td>${user.email || "—"}</td>
+                    <td>${user.requests || 0}</td>
+                    <td>${user.role}</td>
+                    <td><button disabled>Delete</button></td>
+                `;
+                tablebody.appendChild(tr);
+            });        
+        } catch (e){
+            console.log(e); 
+        }
     });
 
 })();

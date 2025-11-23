@@ -48,11 +48,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>John Doe</td>
-                        <td>john@example.com</td>
-                        <td>234</td>
-                        <td>Active</td>
-                        <td><button>Delete</button></td>
+                        
                     </tr>
                 </tbody>
             </table>
@@ -60,86 +56,5 @@
     </main>
     
     <script src="app.js"></script>
-    <script>
-        (function(){
-            // Only allow admins here — app.js guard in admin pages will redirect, but double check
-            try{
-                const cur = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-                if(!cur || cur.role !== 'admin'){
-                    window.location.href = 'index.html';
-                    return;
-                }
-            }catch(e){ window.location.href = 'index.html'; return; }
-
-            const tbody = document.querySelector('table tbody');
-            const addBtn = document.getElementById('add-user-btn');
-
-            function render(){
-                const users = getRoles();
-                tbody.innerHTML = '';
-                if(!users.length){
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = '<td colspan="5" style="text-align:center;color:#666">No users</td>';
-                    tbody.appendChild(tr);
-                    return;
-                }
-                users.forEach((u, idx)=>{
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${u.username}</td>
-                        <td>${u.email || ''}</td>
-                        <td>${u.requests || 0}</td>
-                        <td>${u.role || 'user'}</td>
-                        <td>
-                            <button data-idx="${idx}" class="delete-user">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            // handle delete
-            tbody.addEventListener('click', (e)=>{
-                if(!e.target.matches('.delete-user')) return;
-                const idx = Number(e.target.getAttribute('data-idx'));
-                const users = getRoles();
-                const removed = users.splice(idx,1)[0];
-                setRoles(users);
-                // if the removed user is currently logged in, clear session
-                try{
-                    const cur = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-                    if(cur && cur.username === removed.username){
-                        sessionStorage.removeItem('currentUser');
-                    }
-                }catch(e){}
-                render();
-            });
-
-            // Add user flow
-            addBtn.addEventListener('click', ()=>{
-                // simple prompt-based add
-                const username = prompt('New username:');
-                if(!username) return;
-                const password = prompt('Password for ' + username + ':');
-                if(!password) return;
-                const role = prompt('Role (admin/user):','user') || 'user';
-                const email = prompt('Email (optional):','');
-                const users = getRoles();
-                if(users.find(x=>x.username === username)){
-                    alert('User already exists');
-                    return;
-                }
-                users.push({ username, password, role, email, requests: 0 });
-                setRoles(users);
-                render();
-            });
-
-            // re-render on roles-updated events
-            window.addEventListener('roles-updated', render);
-
-            // initial render
-            render();
-        })();
-    </script>
 </body>
 </html>
