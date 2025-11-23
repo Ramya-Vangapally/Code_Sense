@@ -18,7 +18,7 @@
             if(sel) sel.value = mode === 'dark' ? 'Dark' : 'Light';
         }catch(e){}
     }
-
+})
     function initThemeControls(){
         const saved = localStorage.getItem(THEME_KEY);
         if(saved) applyTheme(saved); else applyTheme('light');
@@ -133,24 +133,34 @@
                     <td>${user.email || "—"}</td>
                     <td>${user.requests || 0}</td>
                     <td>${user.role}</td>
-                    <td><button disabled>Delete</button></td>
+                    <td><button class="delete_user" data-username=${user.username}>Delete</button></td>
                 `;
                 tablebody.appendChild(tr);
             });        
         } catch (e){
             console.log(e); 
         }
-    });
-    const delete_user=document.getElementById("delete_user");
-    delete_user.addEventListener("click",()=>{
-        const response=fetch("http://localhost:5000/delete",{
+        document.querySelectorAll(".delete_user").forEach(btn=>{
+    btn.addEventListener("click",async ()=>{
+        const username=btn.dataset.username;
+        if(!confirm(`Delete user ${username}`)) return;
+        try{
+        const response=await fetch("http://localhost:5000/delete-user",{
             method:"POST",
             headers:{
                 "Content-Type": "application/json"
             },
-            body:JSON.stringify({username:u,password:p})
+            body:JSON.stringify({username})
         })
-        const result=response.json();
+        const result=await response.json();
         console.log(result.message)
+        btn.closest("tr").remove();
+    }
+    catch(err){
+        console.log(err);
+    }
     })
-})();
+    })
+
+    });
+    
