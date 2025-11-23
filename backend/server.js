@@ -1,32 +1,12 @@
-import connectDB from "./db.js";
-connectDB();
+const connectDB=require("./db")
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
+connectDB();
 const User = require('./models/User.js');
 const bcrypt = require('bcrypt');
-
-
-dotenv.config();
-
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-const start = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("MongoDB Connected ✔️");
-
-        const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT} 🚀`);
-        });
-    } catch (err) {
-        console.error("MongoDB Connection Error:", err);
-    }
-};
 
 app.post('/register', async (req, res) => {
   const { username, password, role } = req.body;
@@ -40,4 +20,3 @@ app.post('/register', async (req, res) => {
   }
 });
 
-start();
