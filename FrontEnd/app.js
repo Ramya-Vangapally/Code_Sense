@@ -79,12 +79,32 @@
 
         modal.querySelector('#login-cancel').addEventListener('click', ()=>{ modal.remove(); });
 
-        modal.querySelector('#login-submit').addEventListener('click', ()=>{
+        modal.querySelector('#login-submit').addEventListener('click', async ()=>{
             const u = modal.querySelector('#login-username').value.trim();
             const p = modal.querySelector('#login-password').value;
             const err = modal.querySelector('#login-error');
             err.style.display = 'none';
             if(!u || !p){ err.textContent = 'Please enter username and password.'; err.style.display = 'block'; return; }
+            try{
+                const response = await fetch("http://localhost:5000/login",{
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const result = await response.json();
+                sessionStorage.setItem("currentUser", JSON.stringify(result));
+                modal.remove();
+                if(result.role === "admin"){
+                    window.location.href = "admin.html";
+                } else {
+                    window.location.href = "user.html";
+                }
+
+            } catch(e){
+                console.log(e);
+            }
         });
     }
 
