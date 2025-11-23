@@ -4,6 +4,7 @@ const cors = require('cors');
 connectDB();
 const Login = require('./models/User.js');
 const bcrypt = require('bcrypt');
+const { JsonWebTokenError } = require("jsonwebtoken");
 const app = express();
 require("dotenv").config();
 app.use(express.json());
@@ -19,6 +20,18 @@ app.post('/register', async (req, res) => {
     console.log(e);
     res.status(400).json({ message: "Problem occured", error: e.message });
   }
+});
+
+app.post('/login', async (req, res)=> {
+  const { username, password, role } = req.body;
+  const user = await Login.findOne({username});
+  if(!user) return res.status(404).json({message: "User not found"});
+  const isMatch = await bcrypt.compare(password, user.password);
+  if(!isMatch) return res.status(400).json({message: "Wrong password"});
+  return res.json({
+    username: user.username,
+    role: user.role
+  });
 });
 
 const PORT = process.env.PORT || 5000;
