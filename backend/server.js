@@ -5,6 +5,7 @@ connectDB();
 const User = require('./models/User.js');
 const bcrypt = require('bcrypt');
 const app = express();
+require("dotenv").config();
 app.use(express.json());
 app.use(cors());
 
@@ -20,3 +21,8 @@ app.post('/register', async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} 🚀`);
+});
