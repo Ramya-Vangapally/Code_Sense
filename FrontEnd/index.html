@@ -6,6 +6,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css"> 
 </head>
+<style>
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Smooth fade + pop */
+.modal {
+    background: #ffffff;
+    width: 420px;
+    padding: 35px 40px;
+    border-radius: 24px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.15);
+    animation: modalPop 0.28s ease-out;
+    position: relative;
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.85) translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.close-btn {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #777;
+    transition: 0.2s;
+}
+.close-btn:hover {
+    color: #333;
+}
+
+.modal h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 22px;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* Input fields */
+.modal input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    font-size: 15px;
+    transition: 0.2s;
+    outline: none;
+}
+
+.modal input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
+/* Button (matches Try Now gradient) */
+.modal button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 5px;
+    background: linear-gradient(to right, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.25s;
+}
+
+.modal button:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+/* Blur effect for background content */
+.blur {
+    filter: blur(6px);
+    transition: 0.3s ease;
+}
+</style>
 <body>
     <header>
         <nav>
@@ -15,7 +116,7 @@
             </div>
         </nav>
     </header>
-    <main>
+    <main id="pageContent">
         <section>
             <h1>Paste Code → Get an Easy Explanation</h1>
             <p>Transform complex code into simple, human-friendly explanations. Support for all programming languages with AI-powered analysis.</p>
@@ -78,6 +179,18 @@ function fibonacci(n) {
             </div>
         </section>
     </main>
+    <div id="loginModal" class="modal-overlay">
+    <div class="modal">
+      <span class="close-btn" id="closeLogin">&times;</span>
+      <h2>Login</h2>
+
+      <form>
+        <input type="text" placeholder="Username" required><br><br>
+        <input type="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
     <footer class="site-footer" role="contentinfo" aria-label="Site footer">
         <div class="site-footer__inner">
             <div class="footer-column footer-brand">
@@ -122,5 +235,28 @@ function fibonacci(n) {
         </div>
     </footer>
 </body>
-<script src="app.js"></script>
+<script>
+    const openBtn = document.getElementById("try-now");
+    const modal = document.getElementById("loginModal");
+    const closeBtn = document.getElementById("closeLogin");
+    const content = document.getElementById("pageContent");
+
+    openBtn.onclick = () => {
+      modal.style.display = "flex";
+      content.classList.add("blur");
+    };
+
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+      content.classList.remove("blur");
+    };
+
+    // Close on clicking outside modal
+    window.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+        content.classList.remove("blur");
+      }
+    };
+</script>
 </html>
