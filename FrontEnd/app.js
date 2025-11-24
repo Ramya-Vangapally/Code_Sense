@@ -119,6 +119,66 @@
 
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());
+                // USER PAGE: generate explanation
+        const explainBtn = document.querySelector(".bottom-cta .btn-primary");
+        if (explainBtn) {
+            explainBtn.addEventListener("click", async () => {
+                const codeEl = document.getElementById("code-input");
+                const langEl = document.getElementById("language");
+                const view = document.getElementById("explanation-view");
+
+                const code = (codeEl?.value || "").trim();
+                const language = langEl ? langEl.value : "Auto";
+
+                if (!code) {
+                    alert("Please paste some code first.");
+                    return;
+                }
+
+                // show loading state
+                if (view) {
+                    view.innerHTML = `
+                        <div class="placeholder">
+                            <div class="placeholder-icon">⏳</div>
+                            <div>Generating explanation...</div>
+                        </div>
+                    `;
+                }
+
+                try {
+                    const res = await fetch("http://localhost:5000/api/explain", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ code, language })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.message || "Server error");
+                    }
+
+                    if (view) {
+                        view.innerHTML = `
+                            <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.5;">
+                                ${data.explanation || "No explanation returned."}
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if (view) {
+                        view.innerHTML = `
+                            <div class="placeholder">
+                                <div class="placeholder-icon">⚠️</div>
+                                <div>Failed to generate explanation: ${err.message}</div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+
 
         const tablebody = document.getElementById("User_data");
         if(!tablebody) return;
