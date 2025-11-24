@@ -107,7 +107,11 @@
             }
         });
     }
-
+    const tbody=document.getElementById("user-history")
+    if(!tbody) return 
+    try{
+        const response=fetch("http://localhost:5000")
+    }
     document.addEventListener('DOMContentLoaded', async ()=>{
         try{ initThemeControls(); }catch(e){}
 
