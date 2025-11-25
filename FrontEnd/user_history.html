@@ -263,6 +263,46 @@
             color: var(--muted);
         }
 
+        /* Profile dropdown container (match user.html) */
+        .profile-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Dropdown box */
+        .profile-menu {
+            position: absolute;
+            top: 38px;
+            right: 0;
+            background: var(--panel-bg, #fff);
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            min-width: 150px;
+            padding: 8px 0;
+            display: none;
+            z-index: 999;
+        }
+
+        /* Items inside dropdown */
+        .profile-menu a,
+        .profile-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-color, #222);
+        }
+
+        .profile-menu a:hover,
+        .profile-menu button:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
         @media (max-width: 720px) {
             .topbar {
                 flex-direction: column;
@@ -302,14 +342,21 @@
                 <div class="nav-tabs">
                     <button class="nav-tab" type="button" onclick="location.href='user.html'">Generate</button>
                     <button class="nav-tab active" type="button" onclick="location.href='user_history.html'">History</button>
-                    <button class="nav-tab" type="button" onclick="location.href='user_settings.html'">Settings</button>
                 </div>
             </div>
 
             <div class="top-actions">
-                <button id="theme-toggle" class="icon-btn" title="Toggle theme">☀️</button>
-                <button class="icon-btn" title="Profile">🧑‍💻</button>
-                <button class="icon-btn" title="Refresh">⟲</button>
+                <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
+                <div class="profile-wrapper">
+                    <button id="profile-btn" class="icon-btn" title="Profile">👤</button>
+
+                    <div id="profile-menu" class="profile-menu">
+                    <a href="user_settings.html">Settings</a>
+                    <button id="logout-btn">Logout</button>
+                    </div>
+                </div>
+
+                <button class="icon-btn" title="Share">⤴</button>
             </div>
         </header>
 

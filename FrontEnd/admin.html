@@ -1,103 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="styles.css"> 
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <aside>
-        <h1><a href="index.html">Code Sense</a></h1>
-        <p>Admin Panel</p>
-        <nav>
-            <ul>
-              <li><a href="admin.html">Dashboard</a></li>
-              <li><a href="user_management.html">User Management</a></li>
-              <li><a href="logs.html">Logs</a></li>
-              <li><a href="admin_settings.html">Model Settings</a></li>
-            </ul>
-        </nav>
-        <footer class="aside-footer" aria-label="Admin footer">
-            <div>
-                <p>Admin User</p>
-                <p><a href="mailto:admin@codesense.ai">admin@codesense.ai</a></p>
-            </div>
-        </footer>
+      <h1><a href="index.html">Code Sense</a></h1>
+      <p>Admin Panel</p>
+      <nav>
+        <ul>
+          <li><a href="admin.html">Dashboard</a></li>
+          <li><a href="user_management.html">User Management</a></li>
+          <li><a href="logs.html">Logs</a></li>
+          <li><a href="admin_settings.html">Model Settings</a></li>
+        </ul>
+      </nav>
+      <footer class="aside-footer" aria-label="Admin footer">
+        <div>
+          <p>Admin User</p>
+          <p><a href="mailto:admin@codesense.ai">admin@codesense.ai</a></p>
+        </div>
+      </footer>
     </aside>
     <main>
-        <header>
-            <h1>Dashboard</h1>
-            <p>overview of system analytics and performance</p>
-            <nav>
-                <div>
-                    <a href="#">User View</a>
-                    <a href="#" class="logout-link">Log out</a>
-                </div>
-            </nav>
-            </header>
-            <div>
-                <div>
-                    <p>+12.5%</p>
-                    <p>12,847</p>
-                    <h>Total requests</h>
-                </div>
-                <div>
-                    <p>+8.2%</p>
-                    <p>2,345</p>
-                    <h>Active Users</h>
-                </div>
-                <div>
-                    <p>Top 5</p>
-                    <p>23</p>
-                    <h>Languages Supported</h>
-                </div>
-                <div>
-                    <p>+15.3%</p>
-                    <p>94.2%</p>
-                    <h>Success Rate</h>
-                </div>
-            </div>
-            <div class="Chart">
-                
-            </div>
-            <div>
-                <h2>Popular Languages</h2>
-                <ul>
-                    <li>
-                        <span>JavaScript</span>
-                        <div></div>
-                        <span>1240 requests</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <div>
-                <p>Recent Operations</p>
-            <table>
-                <tr>
-                    <th>USER</th>
-                    <th>ACTION</th>
-                    <th>LANGUAGE</th>
-                    <th>TIME</th>
-                </tr> 
-                <tbody id="admin_user_history">  
-                </tbody>
-            </table>
-            </div>
-           </main>
+      <header>
+        <h1>Dashboard</h1>
+        <p>overview of system analytics and performance</p>
+        <nav>
+          <div>
+            <a href="#">User View</a>
+            <a href="#" class="logout-link">Log out</a>
+          </div>
+        </nav>
+      </header>
+      <div>
+        <div>
+          <p>+12.5%</p>
+          <p>12,847</p>
+          <h>Total requests</h>
+        </div>
+        <div>
+          <p>+8.2%</p>
+          <p>2,345</p>
+          <h>Active Users</h>
+        </div>
+        <div>
+          <p>Top 5</p>
+          <p>23</p>
+          <h>Languages Supported</h>
+        </div>
+        <div>
+          <p>+15.3%</p>
+          <p>94.2%</p>
+          <h>Success Rate</h>
+        </div>
+      </div>
+      <div class="Chart"></div>
+      <div>
+        <h2>Popular Languages</h2>
+        <ul>
+          <li>
+            <span>JavaScript</span>
+            <div></div>
+            <span>1240 requests</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <p>Recent Operations</p>
+        <table>
+          <tr>
+            <th>USER</th>
+            <th>ACTION</th>
+            <th>LANGUAGE</th>
+            <th>TIME</th>
+          </tr>
+          <tbody id="admin_user_history"></tbody>
+        </table>
+      </div>
+    </main>
     <script src="app.js"></script>
     <script>
-        // Guard: ensure only users with role 'admin' can view this page
-        (function(){
-            try{
-                const cur = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-                if(!cur || cur.role !== 'admin'){
-                    // not authorized -> return to homepage
-                    window.location.href = 'index.html';
-                }
-            }catch(e){ window.location.href = 'index.html'; }
-        })();
+      // Guard: ensure only users with role 'admin' can view this page
+      (function () {
+        try {
+          const cur = JSON.parse(
+            sessionStorage.getItem("currentUser") || "null"
+          );
+          if (!cur || cur.role !== "admin") {
+            // not authorized -> return to homepage
+            window.location.href = "index.html";
+          }
+        } catch (e) {
+          window.location.href = "index.html";
+        }
+      })();
     </script>
-    </body>
-    </html>
+  </body>
+</html>
