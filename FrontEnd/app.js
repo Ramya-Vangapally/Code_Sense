@@ -190,6 +190,32 @@
                 body:JSON.stringify({username,role,action,language})
             })
         })
+        const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+        const username = currentUser?.username;
+        const tblbody=document.getElementById("user_history");
+        if(tblbody){
+            try{
+                const response = await fetch("http://localhost:5000/user-history",{
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ username })
+                });
+                result = await response.json();
+                tblbody.innerHTML="";
+                result.forEach(data=>{
+                    const tr=document.createElement('tr');
+                    tr.innerHTML=`
+                    <td>${data.action}</td>
+                    <td>${data.language || "—"}</td>
+                    <td>${data.time || data.createdAt || "—"}</td>
+                    `;
+                    tblbody.append(tr);
+                })
+            } catch(e){
+                console.log("Failed to fetch user history");
+            }
+        }
+
         const tbody=document.getElementById("admin_user_history");
         if(tbody){
             try{
