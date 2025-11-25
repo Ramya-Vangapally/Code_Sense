@@ -107,25 +107,7 @@
             }
         });
     }
-    const tbody=document.getElementById("user-history")
-    if(!tbody) return 
-    try{
-        const response=await fetch("http://localhost:5000/admin-history")
-        const result=await response.json()
-        tbody.innerHTML="";
-        result.forEach(user=>{
-            const tr=document.createElement('tr');
-            tr.innerHTML=`
-            <td>${user.username}</td>
-            <td>${user.Action}</td>
-            <td>${user.language}</td>
-            <td>${user.time}</td>
-            `
-            tbody.append(tr);
-        });
-    }catch(err){
-        console.log("Failed to fetch user history");
-    }
+    
     document.addEventListener('DOMContentLoaded', async ()=>{
         try{ initThemeControls(); }catch(e){}
 
@@ -137,7 +119,8 @@
 
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());
-                // USER PAGE: generate explanation
+
+        // USER PAGE: generate explanation
         const explainBtn = document.querySelector(".bottom-cta .btn-primary");
         if (explainBtn) {
             explainBtn.addEventListener("click", async () => {
@@ -153,7 +136,6 @@
                     return;
                 }
 
-                // show loading state
                 if (view) {
                     view.innerHTML = `
                         <div class="placeholder">
@@ -197,6 +179,29 @@
             });
         }
 
+        const tbody=document.getElementById("user-history");
+        if(tbody){
+            try{
+                const response=await fetch("http://localhost:5000/admin-history",{
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"}
+                });
+                const result=await response.json();
+                tbody.innerHTML="";
+                result.forEach(user=>{
+                    const tr=document.createElement('tr');
+                    tr.innerHTML=`
+                    <td>${user.username}</td>
+                    <td>${user.action}</td>
+                    <td>${user.language || "—"}</td>
+                    <td>${user.time || user.createdAt || "—"}</td>
+                    `;
+                    tbody.append(tr);
+                });
+            }catch(err){
+                console.log("Failed to fetch user history");
+            }
+        }
 
         const tablebody = document.getElementById("User_data");
         if(!tablebody) return;
@@ -215,32 +220,29 @@
                 `;
                 tablebody.appendChild(tr);
             });    
-    document.querySelectorAll(".delete_user").forEach(btn=>{
-        btn.addEventListener("click",async ()=>{
-        const username=btn.dataset.username;
-        if(!confirm(`Delete user ${username}`)) return;
-        try{
-            const response=await fetch("http://localhost:5000/delete-user",{
-                method:"POST",
-                headers:{
-                    "Content-Type": "application/json"
-                },
-                body:JSON.stringify({username})
-            })
-            const result=await response.json();
-            console.log(result.message)
-            btn.closest("tr").remove();
-        }
-    catch(err){
-        console.log(err);
-    }
-    })
-    })    
+            document.querySelectorAll(".delete_user").forEach(btn=>{
+                btn.addEventListener("click",async ()=>{
+                    const username=btn.dataset.username;
+                    if(!confirm(`Delete user ${username}`)) return;
+                    try{
+                        const response=await fetch("http://localhost:5000/delete-user",{
+                            method:"POST",
+                            headers:{
+                                "Content-Type": "application/json"
+                            },
+                            body:JSON.stringify({username})
+                        })
+                        const result=await response.json();
+                        console.log(result.message)
+                        btn.closest("tr").remove();
+                    }
+                catch(err){
+                    console.log(err);
+                }
+                })
+            })    
         } catch (e){
             console.log(e); 
         }
-        
-
     });
 })();
-    
