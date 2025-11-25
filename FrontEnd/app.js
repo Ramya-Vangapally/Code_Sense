@@ -179,11 +179,11 @@
             });
         }
 
-        const tbody=document.getElementById("user-history");
+        const tbody=document.getElementById("admin_user_history");
         if(tbody){
             try{
                 const response=await fetch("http://localhost:5000/admin-history",{
-                    method: "POST",
+                    method: "GET",
                     headers: {"Content-Type": "application/json"}
                 });
                 const result=await response.json();
@@ -203,7 +203,7 @@
             }
         }
 
-        const tablebody = document.getElementById("User_data");
+        const tablebody = document.getElementById("admin_user_data");
         if(!tablebody) return;
         try{
             const res = await fetch("http://localhost:5000/get-users");

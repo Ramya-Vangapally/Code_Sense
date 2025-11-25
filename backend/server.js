@@ -66,7 +66,7 @@ app.post('/add-history', async (req, res) => {
   }
 });
 
-app.post('/admin-history', async(req,res)=>{
+app.get('/admin-history', async(req,res)=>{
   try{
     const history = await User_history.find({});
     res.json(history);
