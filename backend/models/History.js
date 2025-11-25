@@ -1,6 +1,6 @@
 const mongoose=require("mongoose")
 const HistorySchema=new mongoose.Schema({
-    username:{type:String,required:true,unique:true},
+    username:{type:String,required:true},
     role:{type:String,required:true},
     action:{type:String,required:true},
     language:{type:String,required:true},

@@ -178,7 +178,18 @@
                 }
             });
         }
-
+        document.querySelector(".btn-primary").addEventListener("click",async()=>{
+            const language=document.getElementById("language").value;
+            const action=document.getElementById("code-input").value;
+            const user=JSON.parse(sessionStorage.getItem("currentUser"))
+            const username=user.username;
+            const role=user.role
+            const response=await fetch("http://localhost:5000/add-history",{
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body:JSON.stringify({username,role,action,language})
+            })
+        })
         const tbody=document.getElementById("admin_user_history");
         if(tbody){
             try{
