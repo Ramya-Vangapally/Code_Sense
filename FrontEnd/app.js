@@ -53,6 +53,22 @@
         window.location.href = 'index.html';
     }
 
+    // Format a date/time value to IST (Asia/Kolkata)
+    function formatToIST(dateVal){
+        if(!dateVal) return '—';
+        try{
+            const d = new Date(dateVal);
+            if(isNaN(d)) return String(dateVal);
+            return d.toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }catch(e){
+            return String(dateVal);
+        }
+    }
+
     function showLoginModal(triggerElement){
         // If a static modal exists in the page, show it instead of creating a new one
         const staticModal = document.getElementById('loginModal') || document.getElementById('login-modal');
@@ -325,10 +341,11 @@
                 tblbody.innerHTML="";
                 result.forEach(data=>{
                     const tr=document.createElement('tr');
+                    const userTime = formatToIST(data.time || data.createdAt);
                     tr.innerHTML=`
                     <td>${data.action}</td>
                     <td>${data.language || "—"}</td>
-                    <td>${data.time || data.createdAt || "—"}</td>
+                    <td>${userTime}</td>
                     `;
                     tblbody.append(tr);
                 });
@@ -349,14 +366,89 @@
                 tbody.innerHTML="";
                 result.forEach(user=>{
                     const tr=document.createElement('tr');
+                    const adminTime = formatToIST(user.time || user.createdAt);
                     tr.innerHTML=`
                     <td>${user.username}</td>
                     <td>${user.action}</td>
                     <td>${user.language || "—"}</td>
-                    <td>${user.time || user.createdAt || "—"}</td>
+                    <td>${adminTime}</td>
                     `;
                     tbody.append(tr);
                 });
+                // Update dashboard stats using real data
+                try{
+                    // Total requests = total history records
+                    const totalRequestsEl = document.getElementById('total-requests');
+                    if(totalRequestsEl) totalRequestsEl.textContent = String(result.length || 0);
+
+                    // Languages supported = distinct languages in history
+                    const langs = new Set();
+                    result.forEach(item => {
+                        const lang = (item.language || 'Unknown').toString().trim() || 'Unknown';
+                        langs.add(lang);
+                    });
+                    const languagesSupportedEl = document.getElementById('languages-supported');
+                    if(languagesSupportedEl) languagesSupportedEl.textContent = String(langs.size);
+
+                    const langTopEl = document.getElementById('lang-top');
+                    if(langTopEl) langTopEl.textContent = `Top ${Math.min(5, langs.size)}`;
+
+                    // Active users: fetch from /get-users (server-side user list)
+                    try{
+                        const resUsers = await fetch('http://localhost:5000/get-users');
+                        if(resUsers.ok){
+                            const users = await resUsers.json();
+                            const activeEl = document.getElementById('active-users');
+                            if(activeEl) activeEl.textContent = String((users && users.length) || 0);
+                        }
+                    }catch(e){ console.log('Failed to fetch users for active count', e); }
+                }catch(e){ console.log('Failed to update dashboard stats', e); }
+                // Compute language statistics and render chart (using real data)
+                try{
+                    const languageCounts = {};
+                    result.forEach(item => {
+                        const lang = (item.language || 'Unknown').toString().trim() || 'Unknown';
+                        languageCounts[lang] = (languageCounts[lang] || 0) + 1;
+                    });
+
+                    const entries = Object.entries(languageCounts).sort((a,b)=>b[1]-a[1]);
+                    const top = entries.slice(0, 8);
+                    const labels = top.map(e=>e[0]);
+                    const data = top.map(e=>e[1]);
+
+                    const canvas = document.getElementById('languageChart');
+                    if(canvas){
+                        const ctx = canvas.getContext('2d');
+                        if(window.languageChart){
+                            try{ window.languageChart.destroy(); }catch(e){}
+                        }
+                        if(labels.length === 0){
+                            // draw a small message
+                            ctx.clearRect(0,0,canvas.width,canvas.height);
+                            ctx.fillStyle = '#666';
+                            ctx.font = '14px sans-serif';
+                            ctx.fillText('No language data available', 10, 30);
+                        } else {
+                            const background = labels.map((_,i)=> `hsl(${(i*55)%360} 65% 55%)`);
+                            window.languageChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels,
+                                    datasets: [{
+                                        label: 'Requests',
+                                        data,
+                                        backgroundColor: background
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: { legend: { display: false } },
+                                    scales: { y: { beginAtZero: true } }
+                                }
+                            });
+                        }
+                    }
+                }catch(e){ console.log('Failed to render language chart', e); }
             }catch(err){
                 console.log("Failed to fetch user history");
             }
