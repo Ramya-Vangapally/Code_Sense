@@ -274,8 +274,37 @@
                         `;
                     }
                 }
+
+                
             });
         }
+        try {
+  const logoutSelectors = '.logout-link,[data-logout],#logout,a[href="/logout"],a[href="logout"]';
+  document.querySelectorAll(logoutSelectors).forEach(el=>{
+    el.addEventListener('click', ev=>{
+      try{ ev.preventDefault(); }catch(e){}
+      logout();
+    });
+  });
+
+  document.body.addEventListener('click', ev=>{
+    const el = ev.target && ev.target.closest && (
+      ev.target.closest('.logout-link') ||
+      ev.target.closest('[data-logout]') ||
+      ev.target.closest('#logout') ||
+      ev.target.closest('a[href="/logout"]') ||
+      ev.target.closest('a[href="logout"]')
+    );
+    if(el){
+      try{ ev.preventDefault(); }catch(e){}
+      logout();
+    }
+  });
+} catch(e){
+  console.log('logout wiring failed', e);
+}
+
+// ... rest of DOMContentLoaded code ...
 
         // ❌ REMOVED the old generic .btn-primary listener that was crashing pages
         // document.querySelector(".btn-primary").addEventListener(...)
