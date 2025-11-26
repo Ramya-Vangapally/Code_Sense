@@ -54,7 +54,12 @@
     }
 
     function showLoginModal(triggerElement){
-        if(document.getElementById('login-modal')) return;
+        // If a static modal exists in the page, show it instead of creating a new one
+        const staticModal = document.getElementById('loginModal') || document.getElementById('login-modal');
+        if(staticModal){
+            staticModal.style.display = 'flex';
+            return;
+        }
 
         const modal = document.createElement('div');
         modal.id = 'login-modal';
@@ -111,11 +116,69 @@
     document.addEventListener('DOMContentLoaded', async ()=>{
         try{ initThemeControls(); }catch(e){}
 
+        // Wire static login modal (if present in HTML) to backend login
+        try{
+            const staticModal = document.getElementById('loginModal');
+            if(staticModal){
+                const closeBtn = document.getElementById('closeLogin');
+                if(closeBtn) closeBtn.addEventListener('click', ()=>{ staticModal.style.display = 'none'; });
+
+                const form = staticModal.querySelector('form');
+                if(form){
+                    form.addEventListener('submit', async (ev)=>{
+                        ev.preventDefault();
+                        const inputs = form.querySelectorAll('input');
+                        const username = inputs[0]?.value?.trim();
+                        const password = inputs[1]?.value || '';
+                        if(!username || !password){
+                            alert('Please provide username and password.');
+                            return;
+                        }
+                        try{
+                            const response = await fetch('http://localhost:5000/login',{
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({ username, password })
+                            });
+                            const result = await response.json();
+                            sessionStorage.setItem('currentUser', JSON.stringify(result));
+                            staticModal.style.display = 'none';
+                            if(result.role === 'admin') window.location.href = 'admin.html'; else window.location.href = 'user.html';
+                        }catch(err){
+                            console.error(err);
+                            alert('Login failed.');
+                        }
+                    });
+                }
+            }
+        }catch(e){ console.log('login modal wiring failed', e); }
+
         const dash = document.getElementById('dashboard-link');
-        if(dash) dash.addEventListener('click', (e)=>{ e.preventDefault(); showLoginModal(dash); });
+        if(dash) dash.addEventListener('click', (e)=>{
+            e.preventDefault();
+            try{
+                const current = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+                if(current){
+                    if(current.role === 'admin') window.location.href = 'admin.html';
+                    else window.location.href = 'user.html';
+                    return;
+                }
+            }catch(err){/* ignore and show modal */}
+            showLoginModal(dash);
+        });
 
         const goBtn = document.getElementById('go-dashboard');
-        if(goBtn) goBtn.addEventListener('click', ()=> showLoginModal(goBtn));
+        if(goBtn) goBtn.addEventListener('click', ()=>{
+            try{
+                const current = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+                if(current){
+                    if(current.role === 'admin') window.location.href = 'admin.html';
+                    else window.location.href = 'user.html';
+                    return;
+                }
+            }catch(err){/* ignore and show modal */}
+            showLoginModal(goBtn);
+        });
 
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());

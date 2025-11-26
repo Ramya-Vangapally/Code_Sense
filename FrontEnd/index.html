@@ -1,239 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>CodeSense</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css"> 
-</head>
-<style>
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(8px);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <style>
+    /* Center dashboard content: header, main, sections, footer */
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      background: transparent;
+    }
 
-/* Smooth fade + pop */
-.modal {
-    background: #ffffff;
-    width: 420px;
-    padding: 35px 40px;
-    border-radius: 24px;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.15);
-    animation: modalPop 0.28s ease-out;
-    position: relative;
-}
+    header nav {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      position: relative;
+    }
 
-@keyframes modalPop {
-    from {
+    /* Top-right actions (theme toggle) */
+    .top-actions {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.35);
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      color: #4b5563;
+    }
+
+    #pageContent {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    /* Make each section centered and constrained */
+    #pageContent section {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    /* Footer alignment */
+    .site-footer__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .site-footer__bar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    /* Smooth fade + pop */
+    .modal {
+      background: #ffffff;
+      width: 420px;
+      padding: 35px 40px;
+      border-radius: 24px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
+      animation: modalPop 0.28s ease-out;
+      position: relative;
+    }
+
+    @keyframes modalPop {
+      from {
         opacity: 0;
         transform: scale(0.85) translateY(15px);
-    }
-    to {
+      }
+      to {
         opacity: 1;
         transform: scale(1) translateY(0);
+      }
     }
-}
 
-.close-btn {
-    position: absolute;
-    top: 14px;
-    right: 18px;
-    font-size: 22px;
-    cursor: pointer;
-    color: #777;
-    transition: 0.2s;
-}
-.close-btn:hover {
-    color: #333;
-}
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #777;
+      transition: 0.2s;
+    }
+    .close-btn:hover {
+      color: #333;
+    }
 
-.modal h2 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 22px;
-    background: linear-gradient(90deg, #6366f1, #a855f7);
-    -webkit-background-clip: text;
-    color: transparent;
-}
+    .modal h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 22px;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
 
-/* Input fields */
-.modal input {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 15px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    background: #fafafa;
-    font-size: 15px;
-    transition: 0.2s;
-    outline: none;
-}
+    /* Input fields */
+    .modal input {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 15px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #fafafa;
+      font-size: 15px;
+      transition: 0.2s;
+      outline: none;
+    }
 
-.modal input:focus {
-    border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
-}
+    .modal input:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+    }
 
-/* Button (matches Try Now gradient) */
-.modal button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 5px;
-    background: linear-gradient(to right, #6366f1, #a855f7);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 17px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.25s;
-}
+    /* Button (matches Try Now gradient) */
+    .modal button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 5px;
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.25s;
+    }
 
-.modal button:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
-}
+    .modal button:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
 
-/* Blur effect for background content */
-.blur {
-    filter: blur(6px);
-    transition: 0.3s ease;
-}
-</style>
-<body>
+    /* Blur effect for background content */
+    .blur {
+      filter: blur(6px);
+      transition: 0.3s ease;
+    }
+  </style>
+  <body>
     <header>
-        <nav>
-            <span>CodeSense</span>
-            <div>
-                <a href="#" id="dashboard-link">Dashboard</a>
-            </div>
-        </nav>
+      <nav>
+        <span>CodeSense</span>
+        <div>
+          <a href="#" id="dashboard-link"></a>
+        </div>
+
+        <div class="top-actions">
+          <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
+        </div>
+      </nav>
     </header>
     <main id="pageContent">
-        <section>
-            <h1>Paste Code → Get an Easy Explanation</h1>
-            <p>Transform complex code into simple, human-friendly explanations. Support for all programming languages with AI-powered analysis.</p>
-            <button id="try-now">Try Now</button>
-            <button id="go-dashboard">Go to Dashboard</button>
-        </section>
-        <section>
-            <div>
-                <div>
-                    <pre>
+      <section>
+        <h1>Paste Code → Get an Easy Explanation</h1>
+        <p>
+          Transform complex code into simple, human-friendly explanations.
+          Support for all programming languages with AI-powered analysis.
+        </p>
+    
+        <button id="go-dashboard">Try Now</button>
+      </section>
+      <section>
+        <div>
+          <div>
+            <pre>
 function fibonacci(n) {
   if (n <= 1) return n;
   return fibonacci(n-1) + fibonacci(n-2);
 }
-                    </pre>
-                </div>
-                <div>
-                    <b>Explanation:</b>
-                    <p>
-                        This function calculates the Fibonacci number for a position using recursion. If n is 0 or 1, it returns n; otherwise, it returns the sum of the two previous Fibonacci numbers.
-                    </p>
-                </div>
-            </div>
-        </section>
-        <section>
-            <h2>Why Choose CodeSense?</h2>
-            <div>
-                <div>
-                    <h4>Supports All Languages</h4>
-                    <p>Python, Rust, JavaScript, Go, and more—our AI understands syntax and semantics across major programming languages.</p>
-                </div>
-                <div>
-                    <h4>Human-Friendly Explanations</h4>
-                    <p>No jargon or complexity. Get explanations written in simple, clear English anyone can understand.</p>
-                </div>
-                <div>
-                    <h4>Fast & Accurate</h4>
-                    <p>Powered by advanced language models for instant, precise explanations every time.</p>
-                </div>
-            </div>
-        </section>
-        <section>
-            <h2>How It Works</h2>
-            <div>
-                <div>
-                    <h3>1</h3>
-                    <p>Paste Your Code</p>
-                    <span>Copy any snippet and paste into our editor.</span>
-                </div>
-                <div>
-                    <h3>2</h3>
-                    <p>AI Analysis</p>
-                    <span>Our AI reviews your code structure and logic.</span>
-                </div>
-                <div>
-                    <h3>3</h3>
-                    <p>Get Explanation</p>
-                    <span>Receive a simple explanation in seconds.</span>
-                </div>
-            </div>
-        </section>
+                    </pre
+            >
+          </div>
+          <div>
+            <b>Explanation:</b>
+            <p>
+              This function calculates the Fibonacci number for a position using
+              recursion. If n is 0 or 1, it returns n; otherwise, it returns the
+              sum of the two previous Fibonacci numbers.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>Why Choose CodeSense?</h2>
+        <div>
+          <div>
+            <h4>Supports All Languages</h4>
+            <p>
+              Python, Rust, JavaScript, Go, and more—our AI understands syntax
+              and semantics across major programming languages.
+            </p>
+          </div>
+          <div>
+            <h4>Human-Friendly Explanations</h4>
+            <p>
+              No jargon or complexity. Get explanations written in simple, clear
+              English anyone can understand.
+            </p>
+          </div>
+          <div>
+            <h4>Fast & Accurate</h4>
+            <p>
+              Powered by advanced language models for instant, precise
+              explanations every time.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>How It Works</h2>
+        <div>
+          <div>
+            <h3>1</h3>
+            <p>Paste Your Code</p>
+            <span>Copy any snippet and paste into our editor.</span>
+          </div>
+          <div>
+            <h3>2</h3>
+            <p>AI Analysis</p>
+            <span>Our AI reviews your code structure and logic.</span>
+          </div>
+          <div>
+            <h3>3</h3>
+            <p>Get Explanation</p>
+            <span>Receive a simple explanation in seconds.</span>
+          </div>
+        </div>
+      </section>
     </main>
     <div id="loginModal" class="modal-overlay">
-    <div class="modal">
-      <span class="close-btn" id="closeLogin">&times;</span>
-      <h2>Login</h2>
+      <div class="modal">
+        <span class="close-btn" id="closeLogin">&times;</span>
+        <h2>Login</h2>
 
-      <form>
-        <input type="text" placeholder="Username" required><br><br>
-        <input type="password" placeholder="Password" required><br><br>
-        <button type="submit">Login</button>
-      </form>
+        <form>
+          <input type="text" placeholder="Username" required /><br /><br />
+          <input type="password" placeholder="Password" required /><br /><br />
+          <button type="submit">Login</button>
+        </form>
+      </div>
     </div>
-  </div>
     <footer class="site-footer" role="contentinfo" aria-label="Site footer">
-        <div class="site-footer__inner">
-            <div class="footer-column footer-brand">
-                <span class="brand-name">CodeSense</span>
-                <p class="brand-tag">Making code understanding accessible to everyone.</p>
-            </div>
-
-            <nav class="footer-column footer-links" aria-label="Footer navigation">
-                <h4>Product</h4>
-                <ul>
-                    <li><a href="#">Features</a></li>
-                    <li><a href="#">Pricing</a></li>
-                    <li><a href="#">API</a></li>
-                </ul>
-            </nav>
-
-            <div class="footer-column footer-links">
-                <h4>Resources</h4>
-                <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Docs</a></li>
-                    <li><a href="#">Blog</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-column footer-contact">
-                <h4>Contact</h4>
-                <ul>
-                    <li><a href="mailto:example@gmail.com">example@gmail.com</a></li>
-                    <li><a href="#" target="_blank" rel="noopener">GitHub</a></li>
-                    <li><a href="#" target="_blank" rel="noopener">Twitter</a></li>
-                </ul>
-            </div>
+      <div class="site-footer__inner">
+        <div class="footer-column footer-brand">
+          <span class="brand-name">CodeSense</span>
+          <p class="brand-tag">
+            Making code understanding accessible to everyone.
+          </p>
         </div>
 
-        <div class="site-footer__bar">
-            <div class="site-footer__social" aria-hidden="false">
-                <a href="#" aria-label="GitHub">🐙</a>
-                <a href="#" aria-label="Twitter">🐦</a>
-            </div>
-            <small>© 2025 CodeSense. All rights reserved.</small>
+        <nav class="footer-column footer-links" aria-label="Footer navigation">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">API</a></li>
+          </ul>
+        </nav>
+
+        <div class="footer-column footer-links">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Docs</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
         </div>
+
+        <div class="footer-column footer-contact">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:example@gmail.com">example@gmail.com</a></li>
+            <li><a href="#" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="#" target="_blank" rel="noopener">Twitter</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="site-footer__bar">
+        <div class="site-footer__social" aria-hidden="false">
+          <a href="#" aria-label="GitHub">🐙</a>
+          <a href="#" aria-label="Twitter">🐦</a>
+        </div>
+        <small>© 2025 CodeSense. All rights reserved.</small>
+      </div>
     </footer>
-</body>
-<script src="app.js"></script>
+  </body>
+  <script src="app.js"></script>
 </html>
