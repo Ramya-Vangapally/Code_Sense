@@ -100,5 +100,16 @@
         }
       })();
     </script>
+     <script>
+      document.querySelector(".logout-link").addEventListener("click", function (e) {
+        e.preventDefault();
+        
+        // remove saved user session
+        sessionStorage.removeItem("currentUser");
+
+        // redirect to homepage
+        window.location.href = "index.html";
+      });
+    </script>
   </body>
 </html>
