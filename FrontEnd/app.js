@@ -460,37 +460,104 @@
                     const labels = top.map(e=>e[0]);
                     const data = top.map(e=>e[1]);
 
-                    const canvas = document.getElementById('languageChart');
-                    if(canvas){
-                        const ctx = canvas.getContext('2d');
-                        if(window.languageChart){
-                            try{ window.languageChart.destroy(); }catch(e){}
-                        }
-                        if(labels.length === 0){
-                            // draw a small message
-                            ctx.clearRect(0,0,canvas.width,canvas.height);
-                            ctx.fillStyle = '#666';
-                            ctx.font = '14px sans-serif';
-                            ctx.fillText('No language data available', 10, 30);
-                        } else {
-                            const background = labels.map((_,i)=> `hsl(${(i*55)%360} 65% 55%)`);
-                            window.languageChart = new Chart(ctx, {
-                                type: 'bar',
-                                data: {
-                                    labels,
-                                    datasets: [{
-                                        label: 'Requests',
-                                        data,
-                                        backgroundColor: background
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    plugins: { legend: { display: false } },
-                                    scales: { y: { beginAtZero: true } }
-                                }
+                    // Render multiple chart types (excluding bar) to present the same language stats
+                    function safeDestroy(key){ try{ if(window[key]){ window[key].destroy(); window[key]=null; } }catch(e){} }
+
+                    const makeColor = i => `hsl(${(i*55)%360} 65% 55%)`;
+                    const palette = labels.map((_,i)=> makeColor(i));
+
+                    if(labels.length === 0){
+                        // If no data, display a small message in the first canvas area
+                        const first = document.getElementById('languageLine');
+                        if(first){ const ctx = first.getContext('2d'); ctx.clearRect(0,0,first.width||300, first.height||150); ctx.fillStyle='#666'; ctx.font='14px sans-serif'; ctx.fillText('No language data available',10,30); }
+                    } else {
+                        // helpers
+                        const createGradient = (ctx, color) => {
+                            const g = ctx.createLinearGradient(0,0,0,300);
+                            g.addColorStop(0, 'rgba(99,102,241,0.45)');
+                            g.addColorStop(1, 'rgba(168,85,247,0.06)');
+                            return g;
+                        };
+
+                        // Build numeric arrays for scatter/bubble
+                        const scatterPoints = labels.map((l,i)=>({ x: i + 1, y: data[i] }));
+                        const bubblePoints = labels.map((l,i)=>({ x: i + 1, y: data[i], r: Math.max(6, Math.sqrt(data[i]) * 4) }));
+
+                        // LINE (with subtle area)
+                        (function(){
+                            const el = document.getElementById('languageLine');
+                            if(!el) return;
+                            const ctx = el.getContext('2d');
+                            safeDestroy('languageLineChart');
+                            window.languageLineChart = new Chart(ctx, {
+                                type: 'line',
+                                data: { labels, datasets: [{ label: 'Requests', data, borderColor: palette[0], backgroundColor: 'rgba(0,0,0,0)', tension: 0.35, pointRadius:4 }] },
+                                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ display:true }, y:{ beginAtZero:true } } }
                             });
-                        }
+                        })();
+
+                        // AREA (line with fill/gradient)
+                        (function(){
+                            const el = document.getElementById('languageArea'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageAreaChart');
+                            const grad = ctx.createLinearGradient(0,0,0,300);
+                            grad.addColorStop(0, 'rgba(99,102,241,0.45)');
+                            grad.addColorStop(1, 'rgba(168,85,247,0.06)');
+                            window.languageAreaChart = new Chart(ctx, {
+                                type: 'line',
+                                data: { labels, datasets: [{ label:'Requests', data, borderColor: 'rgba(99,102,241,0.9)', backgroundColor: grad, tension:0.35, fill:true, pointRadius:3 }] },
+                                options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } }
+                            });
+                        })();
+
+                        // PIE
+                        (function(){
+                            const el = document.getElementById('languagePie'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languagePieChart');
+                            window.languagePieChart = new Chart(ctx,{ type:'pie', data:{ labels, datasets:[{ data, backgroundColor: palette }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } } });
+                        })();
+
+                        // DOUGHNUT
+                        (function(){
+                            const el = document.getElementById('languageDoughnut'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageDoughnutChart');
+                            window.languageDoughnutChart = new Chart(ctx,{ type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor: palette }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, cutout:'50%' } });
+                        })();
+
+                        // RADAR
+                        (function(){
+                            const el = document.getElementById('languageRadar'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageRadarChart');
+                            window.languageRadarChart = new Chart(ctx,{ type:'radar', data:{ labels, datasets:[{ label:'Requests', data, backgroundColor:'rgba(99,102,241,0.18)', borderColor:'rgba(99,102,241,0.9)', pointBackgroundColor:palette }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } } });
+                        })();
+
+                        // POLAR AREA
+                        (function(){
+                            const el = document.getElementById('languagePolar'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languagePolarChart');
+                            window.languagePolarChart = new Chart(ctx,{ type:'polarArea', data:{ labels, datasets:[{ data, backgroundColor: palette }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right' } } } });
+                        })();
+
+                        // SCATTER
+                        (function(){
+                            const el = document.getElementById('languageScatter'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageScatterChart');
+                            window.languageScatterChart = new Chart(ctx,{ type:'scatter', data:{ datasets:[{ label:'Requests', data: scatterPoints, backgroundColor: palette, borderColor: palette, showLine:false, pointRadius:6 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ title:{ display:true, text:'Index' } }, y:{ beginAtZero:true } } } });
+                        })();
+
+                        // BUBBLE
+                        (function(){
+                            const el = document.getElementById('languageBubble'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageBubbleChart');
+                            window.languageBubbleChart = new Chart(ctx,{ type:'bubble', data:{ datasets:[{ label:'Requests', data: bubblePoints, backgroundColor: palette }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ display:false }, y:{ beginAtZero:true } } } });
+                        })();
+
+                        // MIXED (line + scatter)
+                        (function(){
+                            const el = document.getElementById('languageMixed'); if(!el) return;
+                            const ctx = el.getContext('2d'); safeDestroy('languageMixedChart');
+                            window.languageMixedChart = new Chart(ctx,{ data:{ labels, datasets:[ { type:'line', label:'Trend', data, borderColor:'rgba(16,185,129,0.9)', tension:0.3, fill:false }, { type:'scatter', label:'Points', data: scatterPoints, backgroundColor: palette, pointRadius:5 } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ y:{ beginAtZero:true } } } });
+                        })();
                     }
                 }catch(e){ console.log('Failed to render language chart', e); }
             }catch(err){

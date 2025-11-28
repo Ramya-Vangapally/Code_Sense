@@ -399,6 +399,28 @@ input[type="checkbox"] {
   margin-right: 6px;
 }
 
+/* Charts grid styling */
+.charts-grid .chart-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-light);
+  padding: 10px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charts-grid .chart-card canvas {
+  width: 100% !important;
+  height: 220px !important;
+  max-height: 300px;
+}
+
+@media (max-width: 700px){
+  .charts-grid .chart-card canvas { height: 200px !important; }
+}
+
 /* Save Settings button (footer of model settings) */
 main > footer {
   margin-top: 12px;

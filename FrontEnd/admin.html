@@ -53,9 +53,17 @@
           <h>Languages Supported</h>
         </div>
       </div>
-      <div class="charts" style="max-width:820px;margin:18px 0;">
-        <canvas id="languageChart" width="800" height="320" aria-label="Popular languages chart"></canvas>
-      </div>
+      <section class="charts-grid" style="max-width:1100px;margin:18px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+        <div class="chart-card"><canvas id="languageLine" aria-label="Languages line chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageArea" aria-label="Languages area chart"></canvas></div>
+        <div class="chart-card"><canvas id="languagePie" aria-label="Languages pie chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageDoughnut" aria-label="Languages doughnut chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageRadar" aria-label="Languages radar chart"></canvas></div>
+        <div class="chart-card"><canvas id="languagePolar" aria-label="Languages polar area chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageScatter" aria-label="Languages scatter chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageBubble" aria-label="Languages bubble chart"></canvas></div>
+        <div class="chart-card"><canvas id="languageMixed" aria-label="Languages mixed chart"></canvas></div>
+      </section>
       <!-- Popular Languages block removed (now shown via chart above) -->
 
       <div>
