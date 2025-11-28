@@ -48,10 +48,28 @@
         });
     }
 
-    function logout(){
-        sessionStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
+    async function getSessionUser(){
+    try {
+        const res = await fetch("http://localhost:5000/me", {
+            credentials: "include"
+        });
+        return res.ok ? res.json() : null;
+    } catch(e){
+        return null;
     }
+}
+
+
+    async function logout(){
+    try{
+        await fetch("http://localhost:5000/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+    }catch(e){}
+    window.location.href = "index.html";
+}
+
 
     // Format a date/time value to IST (Asia/Kolkata)
     function formatToIST(dateVal){
@@ -116,10 +134,10 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    credentials: "include",
                     body: JSON.stringify({ username: u, password: p })
                 });
                 const result = await response.json();
-                sessionStorage.setItem("currentUser", JSON.stringify(result));
                 modal.remove();
                 if(result.role === "admin"){
                     window.location.href = "admin.html";
@@ -134,7 +152,26 @@
     }
     
     document.addEventListener('DOMContentLoaded', async ()=>{
-        try{ initThemeControls(); }catch(e){}
+
+    try { initThemeControls(); } catch(e){}
+
+    const path = window.location.pathname;
+    const isDashboard =
+        path.includes("user.html") ||
+        path.includes("admin.html");
+
+    let currentUser = null;
+
+    if (isDashboard) {
+        currentUser = await getSessionUser();
+        if (!currentUser) {
+            console.warn("Not logged in → redirecting to home");
+            return window.location.href = "index.html";
+        }
+        console.log("Dashboard loaded for:", currentUser.username, "role:", currentUser.role);
+    }
+
+    const username = currentUser?.username || null;
 
         // Wire static login modal (if present in HTML) to backend login
         try{
@@ -156,12 +193,12 @@
                         }
                         try{
                             const response = await fetch('http://localhost:5000/login',{
+                                credentials: 'include',
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json'},
                                 body: JSON.stringify({ username, password })
                             });
                             const result = await response.json();
-                            sessionStorage.setItem('currentUser', JSON.stringify(result));
                             staticModal.style.display = 'none';
                             if(result.role === 'admin') window.location.href = 'admin.html'; 
                             else window.location.href = 'user.html';
@@ -175,10 +212,10 @@
         }catch(e){ console.log('login modal wiring failed', e); }
 
         const dash = document.getElementById('dashboard-link');
-        if(dash) dash.addEventListener('click', (e)=>{
+        if(dash) dash.addEventListener('click', async (e)=>{
             e.preventDefault();
             try{
-                const current = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+                const current = await getSessionUser();
                 if(current){
                     if(current.role === 'admin') window.location.href = 'admin.html';
                     else window.location.href = 'user.html';
@@ -189,9 +226,9 @@
         });
 
         const goBtn = document.getElementById('go-dashboard');
-        if(goBtn) goBtn.addEventListener('click', ()=>{
+        if(goBtn) goBtn.addEventListener('click', async ()=>{
             try{
-                const current = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+                const current = await getSessionUser();
                 if(current){
                     if(current.role === 'admin') window.location.href = 'admin.html';
                     else window.location.href = 'user.html';
@@ -207,7 +244,8 @@
         // helper to save history AFTER explanation
         async function saveHistoryAfterExplain(){
             try{
-                const user = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+                const current = await getSessionUser();
+                const user = current;
                 if(!user || !user.username) return;
 
                 const language = document.getElementById("language")?.value || "Auto";
@@ -216,6 +254,7 @@
                 if(!action.trim()) return;
 
                 await fetch("http://localhost:5000/add-history",{
+                    credentials: "include",
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body:JSON.stringify({
@@ -257,6 +296,7 @@
 
                 try {
                     const res = await fetch("http://localhost:5000/api/explain", {
+                        credentials: "include",
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ code, language })
@@ -325,14 +365,17 @@
         // ❌ REMOVED the old generic .btn-primary listener that was crashing pages
         // document.querySelector(".btn-primary").addEventListener(...)
 
-        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
-        const username = currentUser?.username;
+        // ✅ give session cookie time to attach
+        
+
+
 
         // USER HISTORY TABLE
         const tblbody = document.getElementById("user_history");
         if(tblbody){
             try{
                 const response = await fetch("http://localhost:5000/user-history",{
+                    credentials: "include",
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ username })
@@ -359,6 +402,7 @@
         if(tbody){
             try{
                 const response=await fetch("http://localhost:5000/admin-history",{
+                    credentials: "include",
                     method: "GET",
                     headers: {"Content-Type": "application/json"}
                 });
@@ -395,7 +439,7 @@
 
                     // Active users: fetch from /get-users (server-side user list)
                     try{
-                        const resUsers = await fetch('http://localhost:5000/get-users');
+                        const resUsers = await fetch('http://localhost:5000/get-users',{ credentials: 'include' });
                         if(resUsers.ok){
                             const users = await resUsers.json();
                             const activeEl = document.getElementById('active-users');
@@ -458,7 +502,7 @@
         const tablebody = document.getElementById("admin_user_data");
         if(!tablebody) return;
         try{
-            const res = await fetch("http://localhost:5000/get-users");
+            const res = await fetch("http://localhost:5000/get-users",{ credentials: 'include' });
             const result = await res.json();
             tablebody.innerHTML="";
             result.forEach(user=>{
@@ -478,6 +522,7 @@
                     if(!confirm(`Delete user ${username}`)) return;
                     try{
                         const response=await fetch("http://localhost:5000/delete-user",{
+                            credentials: "include",
                             method:"POST",
                             headers:{
                                 "Content-Type": "application/json"

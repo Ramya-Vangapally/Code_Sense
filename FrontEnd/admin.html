@@ -73,32 +73,5 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
-    <script>
-      // Guard: ensure only users with role 'admin' can view this page
-      (function () {
-        try {
-          const cur = JSON.parse(
-            sessionStorage.getItem("currentUser") || "null"
-          );
-          if (!cur || cur.role !== "admin") {
-            // not authorized -> return to homepage
-            window.location.href = "index.html";
-          }
-        } catch (e) {
-          window.location.href = "index.html";
-        }
-      })();
-    </script>
-     <script>
-      document.querySelector(".logout-link").addEventListener("click", function (e) {
-        e.preventDefault();
-        
-        // remove saved user session
-        sessionStorage.removeItem("currentUser");
-
-        // redirect to homepage
-        window.location.href = "index.html";
-      });
-    </script>
   </body>
 </html>

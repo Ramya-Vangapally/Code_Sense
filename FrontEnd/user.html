@@ -630,39 +630,35 @@
 
 <script src="app.js"></script>
 <script>
-    // Guard: ensure only users with role 'user' can view this page
-    (function(){
-        try{
-            const cur = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-            if(!cur || cur.role !== 'user'){
-                // not authorized -> return to homepage
-                window.location.href = 'index.html';
-            }
-        }catch(e){ window.location.href = 'index.html'; }
-    })();
+  // No more sessionStorage guard – backend /me + app.js handles auth
 
-    // Toggle profile dropdown
-const profileBtn = document.getElementById('profile-btn');
-const profileMenu = document.getElementById('profile-menu');
+  // Toggle profile dropdown
+  const profileBtn = document.getElementById('profile-btn');
+  const profileMenu = document.getElementById('profile-menu');
 
-profileBtn.addEventListener('click', () => {
-    profileMenu.style.display =
-        profileMenu.style.display === 'block' ? 'none' : 'block';
-});
+  profileBtn.addEventListener('click', () => {
+      profileMenu.style.display =
+          profileMenu.style.display === 'block' ? 'none' : 'block';
+  });
 
-// Close dropdown on outside click
-document.addEventListener('click', (e) => {
-    if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-        profileMenu.style.display = 'none';
-    }
-});
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+      if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+          profileMenu.style.display = 'none';
+      }
+  });
 
-// Logout logic
-document.getElementById('logout-btn').addEventListener('click', () => {
-    sessionStorage.removeItem('currentUser');
-    window.location.href = "index.html";
-});
-
+  // Logout via backend session
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+          await fetch('http://localhost:5000/logout', {
+              method: 'POST',
+              credentials: 'include'
+          });
+      } catch (e) {}
+      window.location.href = 'index.html';
+  });
 </script>
+
 </body>
 </html>
