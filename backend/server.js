@@ -157,15 +157,16 @@ app.get('/admin-history',requireAdmin, async(req,res)=>{
   }
 });
 
-app.post('/user-history',requireLogin,async (req,res)=>{
-  const {username} = req.body;
+app.post('/user-history', requireLogin, async (req,res)=>{
+  const username = req.session.user.username;
   try{
-    const history = await User_history.find({username});
+    const history = await User_history.find({ username });
     res.json(history);
-  } catch (e){
+  }catch(e){
     res.status(400).json({message: e});
   }
-})
+});
+
 
 app.post("/api/explain", async (req, res) => {
   const { code, language } = req.body;
