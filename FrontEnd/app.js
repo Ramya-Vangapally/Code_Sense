@@ -309,11 +309,32 @@
                     }
 
                     if (view) {
-                        view.innerHTML = `
-                            <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.5;">
-                                ${data.explanation || "No explanation returned."}
-                            </div>
-                        `;
+                        const raw = data.explanation || "No explanation returned.";
+                        // If marked + DOMPurify are available, render sanitized HTML
+                        if (window.marked && window.DOMPurify) {
+                            try {
+                                const html = DOMPurify.sanitize(marked.parse(raw));
+                                view.innerHTML = `<div style="font-size:13px;line-height:1.6;">${html}</div>`;
+                            } catch (e) {
+                                // fallback to safe text
+                                const fallback = document.createElement('div');
+                                fallback.style.whiteSpace = 'pre-wrap';
+                                fallback.style.fontSize = '13px';
+                                fallback.style.lineHeight = '1.5';
+                                fallback.textContent = raw;
+                                view.innerHTML = '';
+                                view.appendChild(fallback);
+                            }
+                        } else {
+                            // Libraries not loaded — render safe preformatted text
+                            const pre = document.createElement('div');
+                            pre.style.whiteSpace = 'pre-wrap';
+                            pre.style.fontSize = '13px';
+                            pre.style.lineHeight = '1.5';
+                            pre.textContent = raw;
+                            view.innerHTML = '';
+                            view.appendChild(pre);
+                        }
                     }
 
                     // 👉 save history only after successful explanation
