@@ -120,30 +120,43 @@ body > main {
   margin-left: 260px;
   flex: 1;
   padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header inside main (admin) */
 body > main > header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 body > main > header h1 {
   font-size: 1.6rem;
   margin-bottom: 4px;
+  flex: 1;
 }
 
 body > main > header p {
   font-size: 0.9rem;
   color: var(--text-muted);
+  flex: 1;
+}
+
+body > main > header nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
 }
 
 body > main > header nav div,
 body > main > header > div {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 body > main > header a {
@@ -172,6 +185,7 @@ body > main > header + div {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 body > main > header + div > div {
@@ -229,6 +243,7 @@ main section {
   box-shadow: var(--shadow-light);
   padding: 18px 20px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 /* Specific for the Popular Languages list in dashboard */
@@ -280,6 +295,7 @@ main > div:last-of-type {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-light);
   padding: 18px 20px;
+  width: 100%;
 }
 
 main > div:last-of-type > p {
@@ -968,6 +984,367 @@ body:not(:has(> aside)) footer small {
 [data-theme="dark"] .icon-btn:hover {
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+/* ===== Email Form Styles ===== */
+.email-section,
+.email-history-section {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.email-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-light);
+  padding: 24px;
+  width: 100%;
+}
+
+.email-card h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* Charts Grid for dashboard */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin: 18px 0;
+  width: 100%;
+}
+
+.email-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+.form-group:has(#email-body) {
+  grid-column: 1 / -1;
+}
+
+.form-group:last-of-type {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-body);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 150px;
+  font-family: "Monaco", "Courier New", monospace;
+}
+
+.form-help {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Custom Users List */
+.users-list-container {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--bg-body);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 4px;
+}
+
+.user-item input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.user-item label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
+/* Preview Section */
+.preview-section {
+  cursor: pointer;
+  user-select: none;
+}
+
+.preview-section summary {
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 500;
+  margin-bottom: 10px;
+  transition: background 0.2s;
+}
+
+.preview-section summary:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.email-preview {
+  background: var(--bg-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.preview-header {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.preview-header strong {
+  color: var(--text-main);
+}
+
+.preview-header span {
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.preview-body {
+  color: var(--text-main);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  grid-column: 1 / -1;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-light);
+}
+
+.btn-secondary {
+  background: var(--bg-body);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+/* Email History Table */
+.email-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.email-history-table thead tr {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.email-history-table th,
+.email-history-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+
+.email-history-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+/* Status Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.badge-info {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-strong);
+}
+
+/* Dark Mode Support for Email Styles */
+[data-theme="dark"] .email-card {
+  background: var(--bg-card);
+}
+
+[data-theme="dark"] .form-group label {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .form-group input[type="text"],
+[data-theme="dark"] .form-group input[type="email"],
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea {
+  background: var(--bg-body);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="dark"] .users-list-container {
+  background: var(--bg-body);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .user-item {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .preview-section summary {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+[data-theme="dark"] .preview-section summary:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .email-preview {
+  background: var(--bg-body);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .preview-header {
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .preview-header strong {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .preview-header span {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .preview-body {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: var(--bg-body);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+[data-theme="dark"] .email-history-table thead tr {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .email-history-table th,
+[data-theme="dark"] .email-history-table td {
+  color: var(--text-main);
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .email-history-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="dark"] .section-subtitle {
+  color: var(--text-muted);
 }
 
 /* ===== Index Page Specific Styles ===== */

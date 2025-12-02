@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Email - CodeSense</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside>
+      <h1><a href="index.html">Code Sense</a></h1>
+      <p>Admin Panel</p>
+      <nav>
+        <ul>
+          <li><a href="admin.html">Dashboard</a></li>
+          <li><a href="admin_user_management.html">User Management</a></li>
+          <li><a href="admin_email.html">Bulk Email</a></li>
+          <li><a href="logs.html">Logs</a></li>
+          <li><a href="admin_settings.html">Model Settings</a></li>
+        </ul>
+      </nav>
+      <footer class="aside-footer" aria-label="Admin footer">
+        <div>
+          <p>Admin User</p>
+          <p><a href="mailto:admin@codesense.ai">admin@codesense.ai</a></p>
+        </div>
+      </footer>
+    </aside>
+    <main>
+      <header>
+        <h1>Bulk Email</h1>
+        <p>Send emails to all users or selected groups</p>
+        <nav>
+          <div>
+            <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
+            <a href="#" class="logout-link">Log out</a>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Email Form Section -->
+      <section class="email-section">
+        <div class="email-card">
+          <form id="bulk-email-form" class="email-form">
+            <!-- Recipient Selection -->
+            <div class="form-group">
+              <label for="recipient-select">Recipient Group</label>
+              <select id="recipient-select" required>
+                <option value="">-- Select Recipients --</option>
+                <option value="all">All Users</option>
+                <option value="active">Active Users Only</option>
+                <option value="inactive">Inactive Users</option>
+                <option value="custom">Custom Selection</option>
+              </select>
+              <small class="form-help">Choose who will receive this email</small>
+            </div>
+
+            <!-- Custom User Selection (hidden by default) -->
+            <div class="form-group" id="custom-selection" style="display: none;">
+              <label for="custom-users">Select Users</label>
+              <div class="users-list-container">
+                <div class="user-item">
+                  <input type="checkbox" id="user-1" value="user1" />
+                  <label for="user-1">John Doe (john@example.com)</label>
+                </div>
+                <div class="user-item">
+                  <input type="checkbox" id="user-2" value="user2" />
+                  <label for="user-2">Jane Smith (jane@example.com)</label>
+                </div>
+                <div class="user-item">
+                  <input type="checkbox" id="user-3" value="user3" />
+                  <label for="user-3">Bob Johnson (bob@example.com)</label>
+                </div>
+              </div>
+              <button type="button" id="select-all-btn" class="btn-secondary">Select All</button>
+            </div>
+
+            <!-- Email Subject -->
+            <div class="form-group">
+              <label for="email-subject">Subject</label>
+              <input type="text" id="email-subject" placeholder="Email subject" required />
+            </div>
+
+            <!-- Email Body -->
+            <div class="form-group">
+              <label for="email-body">Message</label>
+              <textarea
+                id="email-body"
+                placeholder="Write your message here..."
+                rows="10"
+                required
+              ></textarea>
+            </div>
+
+            <!-- Preview -->
+            <div class="form-group">
+              <details class="preview-section">
+                <summary>Preview Email</summary>
+                <div class="email-preview">
+                  <div class="preview-header">
+                    <strong>Subject:</strong>
+                    <span id="preview-subject">(Subject will appear here)</span>
+                  </div>
+                  <div class="preview-body">
+                    <p id="preview-body">(Email body will appear here)</p>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="reset" class="btn-secondary">Clear</button>
+              <button type="submit" class="btn-primary">Send Email</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Email History Section -->
+      <section class="email-history-section">
+        <div class="email-card">
+          <h2>Recent Emails</h2>
+          <table class="email-history-table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Recipients</th>
+                <th>Sent Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Welcome to CodeSense</td>
+                <td>All Users (150)</td>
+                <td>Nov 28, 2024 10:30 AM</td>
+                <td><span class="badge badge-success">Sent</span></td>
+              </tr>
+              <tr>
+                <td>System Maintenance Notice</td>
+                <td>Active Users (120)</td>
+                <td>Nov 25, 2024 3:45 PM</td>
+                <td><span class="badge badge-success">Sent</span></td>
+              </tr>
+              <tr>
+                <td>Feature Update</td>
+                <td>Custom (45)</td>
+                <td>Nov 20, 2024 9:15 AM</td>
+                <td><span class="badge badge-info">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
