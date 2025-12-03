@@ -10,7 +10,9 @@ const UserSchema = new mongoose.Schema({
     match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
   },
   password: { type: String, required: true },
-  role: { type: String, default: "user" }
+  role: { type: String, default: "user" },
+  verified: { type: Boolean, default: false },
+  verificationToken: { type: String, default: null }
 });
 
 module.exports = mongoose.model("Login", UserSchema, "login");

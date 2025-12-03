@@ -10,6 +10,7 @@ require("dotenv").config();
 
 const app = express();
 app.use(express.json());
+const nodemailer = require('nodemailer');
 
 // Redis Session
 const session = require("express-session");
@@ -167,6 +168,73 @@ app.get('/get-users',requireAdmin, async (req,res) => {
     res.status(404).json({message: e});
   }
 })
+
+// Admin: bulk email endpoint
+app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
+  const { recipients, subject, message } = req.body;
+  if (!subject || !message) {
+    return res.status(400).json({ message: 'Subject and message are required' });
+  }
+
+  try {
+    let recipientList = [];
+
+    if (!recipients || recipients === 'all') {
+      // get all user emails
+      const users = await Login.find({}, { email: 1, _id: 0 });
+      recipientList = users.map(u => u.email).filter(Boolean);
+    } else if (Array.isArray(recipients)) {
+      recipientList = recipients.slice();
+    } else if (typeof recipients === 'string') {
+      recipientList = [recipients];
+    }
+
+    if (!recipientList || recipientList.length === 0) {
+      return res.status(400).json({ message: 'No recipients specified' });
+    }
+
+    // Build transporter from env (SMTP) — fall back to jsonTransport for local/dry-run
+    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, FROM_EMAIL } = process.env;
+    let transporter;
+    if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: Number(SMTP_PORT),
+        secure: Number(SMTP_PORT) === 465,
+        auth: { user: SMTP_USER, pass: SMTP_PASS }
+      });
+    } else {
+      transporter = nodemailer.createTransport({ jsonTransport: true });
+    }
+
+    const mailOptions = {
+      from: FROM_EMAIL || SMTP_USER || 'no-reply@codesense.local',
+      bcc: recipientList.join(','),
+      subject,
+      text: message,
+      html: message.replace(/\n/g, '<br>')
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    // Save a history entry
+    try {
+      await User_history.create({
+        username: req.session.user.username,
+        role: req.session.user.role,
+        action: `Bulk email sent: ${subject}`,
+        language: ''
+      });
+    } catch (histErr) {
+      console.warn('Failed to save email history:', histErr?.message || histErr);
+    }
+
+    return res.json({ message: 'Emails sent', info });
+  } catch (err) {
+    console.error('Bulk email failed:', err);
+    return res.status(500).json({ message: 'Failed to send emails', error: err.message });
+  }
+});
 
 app.post("/delete-user",requireAdmin,async(req,res)=>{
   const {username}=req.body
