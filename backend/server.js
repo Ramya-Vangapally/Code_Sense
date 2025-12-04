@@ -214,19 +214,12 @@ app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
       subject,
       recipients: recipientList.slice(0, 200), // store up to 200 addresses for reference
       recipientsCount: recipientList.length,
-      status: 'pending',
+      status: 'sent',
       sentBy: req.session.user.username
     });
   } catch (e) {
     console.warn('Failed to record email history:', e?.message || e);
   }
-
-  await User_history.create({
-    username: req.session.user.username,
-    role: req.session.user.role,
-    action: `Bulk email queued: ${subject}`,
-    language: "email"
-  });
 
   return res.json({ message: "Emails queued successfully (worker will send them)" });
 });
