@@ -303,6 +303,57 @@ main > div:last-of-type > p {
   margin-bottom: 12px;
 }
 
+.history-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.history-heading p {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.text-link {
+  border: none;
+  background: transparent;
+  color: var(--accent-strong);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.ghost-btn {
+  align-self: flex-start;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ghost-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
 /* ===== Tables (Logs, Users, Recent Ops) ===== */
 
 table {
@@ -438,21 +489,30 @@ input[type="checkbox"] {
   background: var(--bg-card);
   border-radius: 12px;
   box-shadow: var(--shadow-light);
-  padding: 10px;
-  min-height: 180px;
+  padding: 16px;
+  min-height: 220px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
 .charts-grid .chart-card canvas {
   width: 100% !important;
-  height: 220px !important;
+  height: 240px !important;
   max-height: 300px;
 }
 
 @media (max-width: 700px){
   .charts-grid .chart-card canvas { height: 200px !important; }
+}
+
+.chart-caption {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-main);
+  letter-spacing: 0.01em;
 }
 
 /* Save Settings button (footer of model settings) */

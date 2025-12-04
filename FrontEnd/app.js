@@ -552,6 +552,33 @@
 
         // ADMIN HISTORY TABLE
         const tbody=document.getElementById("admin_user_history");
+        const historyShowMoreBtn = document.getElementById("history-show-more");
+        const historyShowAllBtn = document.getElementById("history-show-all");
+        let adminHistoryData = [];
+        let visibleHistoryCount = 10;
+        const HISTORY_INCREMENT = 20;
+
+        const renderAdminHistory = () => {
+            if(!tbody) return;
+            const slice = adminHistoryData.slice(0, visibleHistoryCount);
+            tbody.innerHTML="";
+            slice.forEach(user=>{
+                const tr=document.createElement('tr');
+                const adminTime = formatToIST(user.time || user.createdAt);
+                tr.innerHTML=`
+                    <td>${user.username}</td>
+                    <td>${user.action}</td>
+                    <td>${user.language || "—"}</td>
+                    <td>${adminTime}</td>
+                `;
+                tbody.append(tr);
+            });
+
+            if(historyShowMoreBtn){
+                historyShowMoreBtn.style.display = visibleHistoryCount >= adminHistoryData.length ? 'none' : 'inline-flex';
+            }
+        };
+
         if(tbody){
             try{
                 const response = await fetch(`${API_BASE}/admin-history`, {
@@ -564,18 +591,29 @@
             });
             const result = await response.json();
 
-                tbody.innerHTML="";
-                result.forEach(user=>{
-                    const tr=document.createElement('tr');
-                    const adminTime = formatToIST(user.time || user.createdAt);
-                    tr.innerHTML=`
-                    <td>${user.username}</td>
-                    <td>${user.action}</td>
-                    <td>${user.language || "—"}</td>
-                    <td>${adminTime}</td>
-                    `;
-                    tbody.append(tr);
+                adminHistoryData = [...result].sort((a,b)=>{
+                    const dateA = new Date(a.time || a.createdAt || 0);
+                    const dateB = new Date(b.time || b.createdAt || 0);
+                    return dateB - dateA;
                 });
+                visibleHistoryCount = Math.min(visibleHistoryCount, adminHistoryData.length || visibleHistoryCount);
+                renderAdminHistory();
+
+                if(historyShowMoreBtn){
+                    historyShowMoreBtn.addEventListener('click', ()=>{
+                        if(!adminHistoryData.length) return;
+                        visibleHistoryCount = Math.min(adminHistoryData.length, visibleHistoryCount + HISTORY_INCREMENT);
+                        renderAdminHistory();
+                    });
+                }
+
+                if(historyShowAllBtn){
+                    historyShowAllBtn.addEventListener('click', ()=>{
+                        if(!adminHistoryData.length) return;
+                        visibleHistoryCount = adminHistoryData.length;
+                        renderAdminHistory();
+                    });
+                }
                 // Update dashboard stats using real data
                 try{
                     // Total requests = total history records
@@ -614,10 +652,7 @@
                 }catch(e){ console.log('Failed to update dashboard stats', e); }
                 // Compute language statistics and render only two charts: Bar (languages) and Line (active users)
                 try {
-                    // Fetch admin history and compute language counts
-                    const hRes = await fetch(`${API_BASE}/admin-history`, { credentials: 'include' });
-                    let history = [];
-                    if (hRes.ok) history = await hRes.json();
+                    const history = adminHistoryData.length ? adminHistoryData : result;
 
                     const languageCounts = {};
                     history.forEach(item => {
