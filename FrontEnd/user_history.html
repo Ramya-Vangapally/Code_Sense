@@ -274,9 +274,9 @@
             position: absolute;
             top: 38px;
             right: 0;
-            background: var(--panel-bg, #fff);
-            border: 1px solid rgba(0,0,0,0.15);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                    background: var(--panel-bg);
+                    border: 1px solid var(--border);
+                    box-shadow: 0 4px 14px rgba(15,23,42,0.35);
             border-radius: 6px;
             min-width: 150px;
             padding: 8px 0;
@@ -295,12 +295,21 @@
             padding: 10px 14px;
             cursor: pointer;
             font-size: 14px;
-            color: var(--text-color, #222);
+            color: var(--text);
         }
 
         .profile-menu a:hover,
         .profile-menu button:hover {
-            background: rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.08);
+        }
+
+        html[data-theme="light"] .profile-menu {
+            box-shadow: 0 8px 18px rgba(15,23,42,0.18);
+        }
+
+        html[data-theme="light"] .profile-menu a:hover,
+        html[data-theme="light"] .profile-menu button:hover {
+            background: rgba(15,23,42,0.08);
         }
 
         @media (max-width: 720px) {

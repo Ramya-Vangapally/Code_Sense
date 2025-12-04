@@ -53,6 +53,43 @@
         async function getSessionUser(){
         const token = localStorage.getItem("jwt");
 
+    function initProfileMenu(){
+        const profileBtn = document.getElementById('profile-btn');
+        const profileMenu = document.getElementById('profile-menu');
+        if(!profileBtn || !profileMenu) return;
+
+        const wrapper = profileBtn.closest('.profile-wrapper') || profileBtn;
+        let isOpen = false;
+
+        const setOpen = (open) => {
+            isOpen = open;
+            profileMenu.style.display = open ? 'block' : 'none';
+        };
+
+        profileBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(!isOpen);
+        });
+
+        document.addEventListener('click', (event) => {
+            if(!isOpen) return;
+            if(wrapper.contains(event.target)) return;
+            setOpen(false);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if(event.key === 'Escape' && isOpen){
+                setOpen(false);
+            }
+        });
+
+        window.addEventListener('blur', () => setOpen(false));
+    }
+const API_BASE = window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5000"
+    : "http://localhost:5000";
+
         try {
             const res = await fetch(`${API_BASE}/me`, {
                 method: "GET",
@@ -267,6 +304,7 @@
 
     // Always initialize theme controls (works on all pages)
     try { initThemeControls(); } catch(e){ console.log('Theme init failed:', e); }
+    try { initProfileMenu(); } catch(e){ console.log('Profile menu init failed:', e); }
 
     const path = window.location.pathname;
     const isDashboard =
@@ -451,8 +489,8 @@
                 
             });
         }
-        try {
-  const logoutSelectors = '.logout-link,[data-logout],#logout,a[href="/logout"],a[href="logout"]';
+          try {
+      const logoutSelectors = '.logout-link,[data-logout],#logout,#logout-btn,a[href="/logout"],a[href="logout"]';
   document.querySelectorAll(logoutSelectors).forEach(el=>{
     el.addEventListener('click', ev=>{
       try{ ev.preventDefault(); }catch(e){}
