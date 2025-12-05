@@ -84,6 +84,30 @@ body > aside p {
   color: var(--text-muted);
 }
 
+.aside-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aside-logo .brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: conic-gradient(from 180deg, #6366f1, #a855f7, #22c55e, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(59,130,246,0.3);
+  flex-shrink: 0;
+}
+
+.aside-logo .brand-logo span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f9fafb;
+}
+
 body > aside nav ul {
   list-style: none;
   display: flex;
@@ -1549,6 +1573,33 @@ header nav {
   background: var(--accent-soft);
   color: var(--accent-strong);
   transform: translateY(-1px);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.logo-section .brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: conic-gradient(from 180deg, #6366f1, #a855f7, #22c55e, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(59,130,246,0.3);
+  flex-shrink: 0;
+}
+
+.logo-section .brand-logo span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f9fafb;
 }
 
 #pageContent {
