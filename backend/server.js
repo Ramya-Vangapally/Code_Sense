@@ -116,6 +116,43 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/admin/create-user', requireAdmin, async (req, res) => {
+  const { email, username, password, role } = req.body;
+
+  if (!email || !username || !password) {
+    return res.status(400).json({ message: "Email, username, and password are required" });
+  }
+
+  try {
+    const existingUser = await Login.findOne({
+      $or: [{ email: email.toLowerCase() }, { username }]
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email or username already registered" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = await Login.create({
+      email: email.toLowerCase(),
+      username,
+      password: hashed,
+      role: role === "admin" ? "admin" : "user"
+    });
+
+    return res.json({
+      message: "User created successfully",
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "Unable to create user", error: e.message });
+  }
+});
+
 const generateToken = require("./middleware/generateToken");
 
 app.post('/login', async (req, res) => {
@@ -214,19 +251,12 @@ app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
       subject,
       recipients: recipientList.slice(0, 200), // store up to 200 addresses for reference
       recipientsCount: recipientList.length,
-      status: 'pending',
+      status: 'sent',
       sentBy: req.session.user.username
     });
   } catch (e) {
     console.warn('Failed to record email history:', e?.message || e);
   }
-
-  await User_history.create({
-    username: req.session.user.username,
-    role: req.session.user.role,
-    action: `Bulk email queued: ${subject}`,
-    language: "email"
-  });
 
   return res.json({ message: "Emails queued successfully (worker will send them)" });
 });
@@ -287,10 +317,11 @@ app.get('/metrics', async (req, res) => {
 });
 
 app.post("/delete-user",requireAdmin,async(req,res)=>{
-  const {username}=req.body
-  const user=await Login.findOne({username})
+  const {username, userId}=req.body;
+  const query = userId ? { _id: userId } : { username };
+  const user = await Login.findOne(query);
   if(!user) return res.status(404).json({message: "User not found"});
-  await Login.deleteOne({username})
+  await Login.deleteOne({ _id: user._id });
   return res.json({message:"user deleted successfully"})
 });
 

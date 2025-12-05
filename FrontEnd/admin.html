@@ -55,13 +55,22 @@
         </div>
       </div>
       <section class="charts-grid">
-        <div class="chart-card" style="width:100%;"><h3 style="margin:6px 0 12px 0">Languages Used (Bar)</h3><canvas id="languagesBar" aria-label="Languages bar chart"></canvas></div>
-        <div class="chart-card" style="width:100%;margin-top:18px"><h3 style="margin:6px 0 12px 0">Active Users (Line)</h3><canvas id="activeUsersLine" aria-label="Active users line chart"></canvas></div>
+        <div class="chart-card">
+          <canvas id="languagesBar" aria-label="Languages bar chart"></canvas>
+          <p class="chart-caption">Languages Used</p>
+        </div>
+        <div class="chart-card">
+          <canvas id="activeUsersLine" aria-label="Active users line chart"></canvas>
+          <p class="chart-caption">Active Users</p>
+        </div>
       </section>
       <!-- Popular Languages block removed (now shown via chart above) -->
 
-      <div>
-        <p>Recent Operations</p>
+      <div class="history-card">
+        <div class="history-heading">
+          <p>Recent Operations</p>
+          <button id="history-show-all" type="button" class="text-link">Show all</button>
+        </div>
         <table>
           <tr>
             <th>USER</th>
@@ -71,6 +80,7 @@
           </tr>
           <tbody id="admin_user_history"></tbody>
         </table>
+        <button id="history-show-more" type="button" class="ghost-btn">Show more</button>
       </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

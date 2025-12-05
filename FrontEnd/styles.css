@@ -217,6 +217,84 @@ body > main > header + div > div h3 {
   color: var(--text-muted);
 }
 
+/* Modal (Add User) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  max-width: 420px;
+  width: 100%;
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.modal-card input,
+.modal-card select {
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  padding: 9px 10px;
+  font-size: 0.95rem;
+  background: var(--bg-body);
+  color: var(--text-main);
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.modal-message {
+  min-height: 18px;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.modal-message.success {
+  color: var(--success);
+}
+
+.modal-message.error {
+  color: var(--danger);
+}
+
 /* ===== Dashboard – Chart Card ===== */
 
 .Chart {
@@ -301,6 +379,57 @@ main > div:last-of-type {
 main > div:last-of-type > p {
   font-weight: 600;
   margin-bottom: 12px;
+}
+
+.history-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.history-heading p {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.text-link {
+  border: none;
+  background: transparent;
+  color: var(--accent-strong);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.ghost-btn {
+  align-self: flex-start;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ghost-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 /* ===== Tables (Logs, Users, Recent Ops) ===== */
@@ -438,21 +567,30 @@ input[type="checkbox"] {
   background: var(--bg-card);
   border-radius: 12px;
   box-shadow: var(--shadow-light);
-  padding: 10px;
-  min-height: 180px;
+  padding: 16px;
+  min-height: 220px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
 .charts-grid .chart-card canvas {
   width: 100% !important;
-  height: 220px !important;
+  height: 240px !important;
   max-height: 300px;
 }
 
 @media (max-width: 700px){
   .charts-grid .chart-card canvas { height: 200px !important; }
+}
+
+.chart-caption {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-main);
+  letter-spacing: 0.01em;
 }
 
 /* Save Settings button (footer of model settings) */
