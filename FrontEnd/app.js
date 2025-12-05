@@ -302,22 +302,42 @@
     try { initProfileMenu(); } catch(e){ console.log('Profile menu init failed:', e); }
 
     const path = window.location.pathname;
-    const isDashboard =
-        path.includes("user.html") ||
-        path.includes("admin.html");
+    const protectedPages = [
+        "admin.html",
+        "admin_user_management.html",
+        "admin_email.html",
+        "admin_settings.html",
+        "logs.html",
+        "user.html",
+        "user_settings.html",
+        "user_history.html"
+    ];
+    const requiresSession = protectedPages.some(page => path.includes(page));
 
     let currentUser = null;
 
-    if (isDashboard) {
+    if (requiresSession) {
         currentUser = await getSessionUser();
         if (!currentUser) {
             console.warn("Not logged in → redirecting to home");
             return window.location.href = "index.html";
         }
-        console.log("Dashboard loaded for:", currentUser.username, "role:", currentUser.role);
+        console.log(`${path} loaded for:`, currentUser.username, "role:", currentUser.role);
     }
 
     const username = currentUser?.username || null;
+
+        const footerNameEl = document.getElementById('admin-footer-name');
+        const footerEmailEl = document.getElementById('admin-footer-email');
+        if(footerNameEl || footerEmailEl){
+            const displayName = currentUser?.username || currentUser?.name || 'Admin User';
+            const email = currentUser?.email || 'admin@codesense.ai';
+            if(footerNameEl) footerNameEl.textContent = displayName;
+            if(footerEmailEl){
+                footerEmailEl.textContent = email;
+                footerEmailEl.setAttribute('href', email ? `mailto:${email}` : 'mailto:admin@codesense.ai');
+            }
+        }
 
         // Wire static login modal (if present in HTML) to auth handlers
         try{
@@ -773,7 +793,6 @@
                     tr.innerHTML = `
                         <td>${user.username}</td>
                         <td>${user.email || "—"}</td>
-                        <td>${user.requests || 0}</td>
                         <td>${user.role}</td>
                         <td><button class="delete_user" data-username="${user.username}" data-user-id="${user._id || ''}">Delete</button></td>
                     `;
