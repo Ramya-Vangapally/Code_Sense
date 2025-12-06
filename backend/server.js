@@ -8,22 +8,36 @@ const User_history = require("./models/History.js");
 const EmailHistory = require("./models/EmailHistory.js");
 const client = require('prom-client');
 // Prometheus counters for languages and user actions
-const languageCounter = new client.Counter({
-  name: 'app_language_requests_total',
-  help: 'Total number of requests per language (from history)',
-  labelNames: ['language']
-});
-const userActionsCounter = new client.Counter({
-  name: 'app_user_actions_total',
-  help: 'Total number of user actions recorded',
-  labelNames: ['username']
-});
+// const languageCounter = new client.Counter({
+//   name: 'app_language_r equests_total',
+//   help: 'Total number of requests per language (from history)',
+//   labelNames: ['language']
+// });
+// const userActionsCounter = new client.Counter({
+//   name: 'app_user_actions_total',
+//   help: 'Total number of user actions recorded',
+//   labelNames: ['username']
+// });
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
+// Re-use Gmail for OTP emails
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+// Generate a 6-digit OTP
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 
 // Redis Session
 const session = require("express-session");
@@ -49,7 +63,7 @@ app.use(cors({
 // });
 
 // Session config
-app.set("trust proxy", 1);  // <-- IMPORTANT for 127.0.0.1 to work
+app.set("trust proxy", 1);
 
 app.use(session({
   store: new RedisStore({ client: redisClient }),
@@ -57,9 +71,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,          // because you're on http://localhost
+    secure: false,          
     httpOnly: true,
-    sameSite: "lax",        // or just remove this line (default is Lax)
+    sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
@@ -84,37 +98,127 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
-
-
-app.post('/register', async (req, res) => {
+// STEP 1: user submits email+username+password, we send OTP and store data in Redis (temporary)
+app.post('/register/request-otp', async (req, res) => {
   const { email, username, password } = req.body;
-  
+
   if (!email || !username || !password) {
     return res.status(400).json({ message: "Email, username, and password are required" });
   }
-  
+
   try {
-    // Check if email or username already exists
-    const existingUser = await Login.findOne({ 
-      $or: [{ email: email.toLowerCase() }, { username }] 
+    // Check if already registered
+    const existingUser = await Login.findOne({
+      $or: [{ email: email.toLowerCase() }, { username }]
     });
     if (existingUser) {
       return res.status(400).json({ message: "Email or username already registered" });
     }
-    
+
     const hashed = await bcrypt.hash(password, 10);
-    const user = await Login.create({ 
-      email: email.toLowerCase(),
-      username, 
-      password: hashed, 
-      role: "user" 
+    const otp = generateOtp();
+
+    const key = `pending_user:${email.toLowerCase()}`;
+
+    // Store pending user + OTP in Redis for 5 minutes
+    await redisClient.set(
+      key,
+      JSON.stringify({
+        email: email.toLowerCase(),
+        username,
+        passwordHash: hashed,
+        otp
+      }),
+      'EX',
+      300 // 300 seconds = 5 minutes
+    );
+
+    // Send OTP email
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: 'Code Sense – Email Verification OTP',
+      html: `
+        <p>Hi ${username || ''},</p>
+        <p>Your verification OTP is: <b>${otp}</b></p>
+        <p>This code will expire in 5 minutes.</p>
+      `
     });
-    res.json({ message: "Account created successfully", user: { email: user.email, username: user.username, role: user.role } });
+
+    return res.json({ message: "OTP sent to your email. Please verify to complete signup." });
+
   } catch (e) {
     console.log(e);
-    res.status(400).json({ message: "Unable to create account", error: e.message });
+    return res.status(500).json({ message: "Unable to send OTP", error: e.message });
   }
 });
+
+
+// STEP 2: user sends email+username+otp, we verify and create account in Mongo
+app.post('/register', async (req, res) => {
+  const { email, username, otp } = req.body;
+
+  if (!email || !username || !otp) {
+    return res.status(400).json({ message: "Email, username, and OTP are required" });
+  }
+
+  try {
+    const key = `pending_user:${email.toLowerCase()}`;
+    const pendingJson = await redisClient.get(key);
+
+    if (!pendingJson) {
+      return res.status(400).json({ message: "No pending signup found or OTP expired. Please sign up again." });
+    }
+
+    const pending = JSON.parse(pendingJson);
+
+    // Ensure email + username match what we stored
+    if (
+      pending.email !== email.toLowerCase() ||
+      pending.username !== username
+    ) {
+      return res.status(400).json({ message: "Signup details do not match pending request." });
+    }
+
+    if (pending.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+
+    // Extra safety: make sure not already created
+    const existingUser = await Login.findOne({
+      $or: [{ email: email.toLowerCase() }, { username }]
+    });
+    if (existingUser) {
+      await redisClient.del(key);
+      return res.status(400).json({ message: "Email or username already registered" });
+    }
+
+    // Create user in Mongo using stored hashed password
+    const user = await Login.create({
+      email: pending.email,
+      username: pending.username,
+      password: pending.passwordHash,
+      role: "user"
+    });
+
+    // Clear temp data
+    await redisClient.del(key);
+
+    return res.json({
+      message: "Account created successfully",
+      user: {
+        email: user.email,
+        username: user.username,
+        role: user.role
+      }
+    });
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ message: "Unable to create account", error: e.message });
+  }
+});
+
 
 app.post('/admin/create-user', requireAdmin, async (req, res) => {
   const { email, username, password, role } = req.body;

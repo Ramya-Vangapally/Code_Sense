@@ -234,7 +234,7 @@
                         throw new Error(result.message || 'Login failed');
                     }
 
-                    //  SAVE JWT TOKEN HERE 
+                    //  SAVE JWT TOKEN  
                     localStorage.setItem("jwt", result.token);
 
                     overlay.style.display = 'none';
@@ -252,57 +252,85 @@
 
         if(signupForm){
             signupForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = signupForm.querySelector('#signupEmail')?.value?.trim();
-                const username = signupForm.querySelector('#signupUsername')?.value?.trim();
-                const password = signupForm.querySelector('#signupPassword')?.value || '';
-                const confirm = signupForm.querySelector('#signupConfirm')?.value || '';
+            e.preventDefault();
+            const email = signupForm.querySelector('#signupEmail')?.value?.trim();
+            const username = signupForm.querySelector('#signupUsername')?.value?.trim();
+            const password = signupForm.querySelector('#signupPassword')?.value || '';
+            const confirm = signupForm.querySelector('#signupConfirm')?.value || '';
 
-                if(!email || !username || !password){
-                    showMessage('Please fill in all fields.');
+            if(!email || !username || !password){
+                showMessage('Please fill in all fields.');
+                return;
+            }
+
+            if(password.length < 6){
+                showMessage('Password must be at least 6 characters.');
+                return;
+            }
+
+            if(password !== confirm){
+                showMessage('Passwords do not match.');
+                return;
+            }
+
+            try{
+                // STEP 1: ask backend to send OTP and stash user in Redis
+                showMessage('Sending OTP to your email...');
+                const otpRes = await fetch(`${API_BASE}/register/request-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, username, password })
+                });
+
+                const otpData = await otpRes.json();
+                if(!otpRes.ok){
+                    throw new Error(otpData.message || 'Unable to send OTP');
+                }
+
+                showMessage('OTP sent! Check your email and enter the 6-digit code.', 'success');
+
+                // For now, use a simple prompt (no extra HTML changes needed)
+                const otp = window.prompt('Enter the 6-digit OTP sent to your email:');
+
+                if(!otp){
+                    showMessage('Signup cancelled: no OTP entered.');
                     return;
                 }
 
-                if(password.length < 6){
-                    showMessage('Password must be at least 6 characters.');
-                    return;
+                // STEP 2: verify OTP and create account
+                showMessage('Verifying OTP and creating account...');
+
+                const verifyRes = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, username, otp: otp.trim() })
+                });
+
+                const verifyData = await verifyRes.json();
+                if(!verifyRes.ok){
+                    throw new Error(verifyData.message || 'OTP verification failed');
                 }
 
-                if(password !== confirm){
-                    showMessage('Passwords do not match.');
-                    return;
-                }
+                // Clear signup form
+                signupForm.reset();
+                
+                // Pre-fill login form with username
+                const loginUsername = loginForm?.querySelector('#loginUsername');
+                if(loginUsername) loginUsername.value = username;
 
-                try{
-                    const response = await fetch(`${API_BASE}/register`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ email, username, password })
-                    });
+                showMessage('Account created successfully! Please login to continue.', 'success');
+                setTimeout(() => {
+                    switchMode('login');
+                }, 1500);
 
-                    const result = await response.json();
-                    if(!response.ok){
-                        throw new Error(result.message || 'Signup failed');
-                    }
+            } catch(err){
+                showMessage(err.message || 'Unable to create account. Please try again.');
+            }
+        });
+}
 
-                    // Clear signup form
-                    signupForm.reset();
-                    
-                    // Pre-fill login form with username
-                    const loginUsername = loginForm?.querySelector('#loginUsername');
-                    if(loginUsername) loginUsername.value = username;
-
-                    // Show success message and switch to login
-                    showMessage('Account created successfully! Please login to continue.', 'success');
-                    setTimeout(() => {
-                        switchMode('login');
-                    }, 1500);
-                } catch(err){
-                    showMessage(err.message || 'Unable to create account. Please try again.');
-                }
-            });
-        }
 
         switchMode('login');
     }
