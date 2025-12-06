@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 function queueEmail(to, subject, html, adminEmail) {
-  const pythonCommand = "C:\\Users\\madha\\AppData\\Local\\Programs\\Python\\Python310\\python.exe";
+  const pythonCommand = "C:\\Users\\Sreenithya\\AppData\\Local\\Programs\\Python\\Python310\\python.exe";
 
   const backendPath = __dirname;  // folder where python_tasks exists
 
