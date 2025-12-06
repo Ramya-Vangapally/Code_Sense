@@ -7,17 +7,36 @@ const Login = require("./models/User.js");
 const User_history = require("./models/History.js");
 const EmailHistory = require("./models/EmailHistory.js");
 const client = require('prom-client');
-// Prometheus counters for languages and user actions
-// const languageCounter = new client.Counter({
-//   name: 'app_language_r equests_total',
-//   help: 'Total number of requests per language (from history)',
-//   labelNames: ['language']
-// });
-// const userActionsCounter = new client.Counter({
-//   name: 'app_user_actions_total',
-//   help: 'Total number of user actions recorded',
-//   labelNames: ['username']
-// });
+
+client.collectDefaultMetrics({ prefix: 'code3sense_' });
+
+const loginCounter = new client.Counter({
+  name: 'code3sense_user_logins_total',
+  help: 'Total number of user logins',
+  labelNames: ['user_type'],
+});
+
+const registrationCounter = new client.Counter({
+  name: 'code3sense_registration_total',
+  help: 'Total number of successful registrations',
+});
+
+const activeGauge = new client.Gauge({
+  name: 'code3sense_active_users',
+  help: 'Current number of active users',
+});
+
+const sessionHistogram = new client.Histogram({
+  name: 'code3sense_session_duration_seconds',
+  help: 'Observed session durations in seconds',
+  buckets: [5, 15, 30, 60, 120, 300, 600],
+});
+
+const adminHistoryCounter = new client.Counter({
+  name: 'code3sense_admin_history_total',
+  help: 'Total number of admin history actions',
+  labelNames: ['action'],
+});
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
@@ -204,6 +223,9 @@ app.post('/register', async (req, res) => {
     // Clear temp data
     await redisClient.del(key);
 
+    // PROMETHEUS: increment registration counter here
+    registrationCounter.inc();
+
     return res.json({
       message: "Account created successfully",
       user: {
@@ -243,6 +265,9 @@ app.post('/admin/create-user', requireAdmin, async (req, res) => {
       role: role === "admin" ? "admin" : "user"
     });
 
+    // PROMETHEUS: increment registration counter here
+    registrationCounter.inc();
+
     return res.json({
       message: "User created successfully",
       user: {
@@ -275,6 +300,10 @@ app.post('/login', async (req, res) => {
     role: user.role
   };
 
+  // PROMETHEUS: increment login counter here
+  loginCounter.inc({ user_type: user.role || 'user' }, 1);
+  req.session.createdAt = Date.now();
+
   const token = generateToken(user); // NEW
 
   req.session.save(() => {
@@ -290,6 +319,13 @@ app.post('/login', async (req, res) => {
 
 
 app.post('/logout', (req,res)=>{
+  const createdAt = req.session?.createdAt;
+  if (createdAt) {
+    const durationSeconds = (Date.now() - createdAt) / 1000;
+    // PROMETHEUS: observe session duration here
+    sessionHistogram.observe(durationSeconds);
+  }
+
   req.session.destroy(()=>{
     res.clearCookie('connect.sid');
     res.json({ message: "Logged out" });
@@ -308,6 +344,9 @@ app.get('/me', (req, res) => {
 app.get('/get-users',requireAdmin, async (req,res) => {
   try{
     const users = await Login.find({}, {password: 0});
+
+    // PROMETHEUS: update active users gauge here
+    activeGauge.set(users.length);
     res.json(users);
   } catch(e){
     res.status(404).json({message: e});
@@ -409,12 +448,11 @@ app.get('/admin/active-usage', requireAdmin, async (req, res) => {
   }
 });
 
-// Prometheus metrics
-client.collectDefaultMetrics();
+// Prometheus metrics endpoint
 app.get('/metrics', async (req, res) => {
   try {
     res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
+    res.send(await client.register.metrics());
   } catch (err) {
     res.status(500).end(err.message);
   }
@@ -433,12 +471,8 @@ app.post('/add-history', async (req, res) => {
   const { username, role, action, language } = req.body;
   try {
     const history = await User_history.create({ username, role, action, language });
-    // Update Prometheus counters
-    try{
-      const lang = (language || 'unknown').toString();
-      languageCounter.inc({ language: lang }, 1);
-      userActionsCounter.inc({ username: username }, 1);
-    }catch(e){ console.warn('metric update failed', e); }
+    // PROMETHEUS: count admin history actions here
+    adminHistoryCounter.inc({ action: action || 'create' });
 
     res.json({ message: `History saved for: ${username}`, history });
   } catch (e) {
