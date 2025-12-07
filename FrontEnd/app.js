@@ -362,27 +362,23 @@ window.handleGoogleLogin = async (response) => {
   }
 };
 
-// Google script onload handler (global)
 window.googleLoaded = () => {
   console.log("Google script loaded!");
 
-  if (window.google && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: "158001809006-6vbn09scbhbeud9njlov8gvl7judjuvf.apps.googleusercontent.com",
-      callback: handleGoogleLogin
-    });
+  google.accounts.id.initialize({
+    client_id: "158001809006-6vbn09scbhbeud9njlov8gvl7judjuvf.apps.googleusercontent.com",
+    callback: handleGoogleLogin
+  });
 
-    // Render button if modal already visible
-    const btn = document.getElementById("googleBtn");
-    if (btn) {
-      google.accounts.id.renderButton(btn, {
-        theme: "outline",
-        size: "large",
-        width: "280"
-      });
-    }
-  }
+  document.querySelectorAll(".google-btn").forEach(btn => {
+    google.accounts.id.renderButton(btn, {
+      theme: "outline",
+      size: "large",
+      width: "280"
+    });
+  });
 };
+
 
     document.addEventListener('DOMContentLoaded', async ()=>{
 
