@@ -22,9 +22,17 @@
   --warning: #facc15;
   --danger: #ef4444;
   --radius-lg: 16px;
-  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
-  --shadow-light: 0 8px 20px rgba(15, 23, 42, 0.06);
+  --shadow-soft: 0 22px 70px rgba(15, 23, 42, 0.09);
+  --shadow-light: 0 12px 30px rgba(15, 23, 42, 0.08);
   --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  --landing-bg-start: #f6f4ff;
+  --landing-bg-end: #f3f7ff;
+  --card-border: rgba(15, 23, 42, 0.08);
+  --card-shadow: 0 18px 60px rgba(15, 23, 42, 0.07);
+  --card-surface: rgba(255, 255, 255, 0.82);
+  --card-gradient-soft: linear-gradient(135deg, rgba(99, 102, 241, 0.09), rgba(14, 165, 233, 0.07));
+  --landing-card-text: #111827;
+  --landing-card-muted: rgba(17, 24, 39, 0.72);
 }
 
 /* Dark mode */
@@ -43,6 +51,8 @@
   --danger: #f87171;
   --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.4);
   --shadow-light: 0 8px 20px rgba(0, 0, 0, 0.3);
+  --landing-card-text: #050505;
+  --landing-card-muted: rgba(5, 5, 5, 0.68);
 }
 
 html,
@@ -672,17 +682,21 @@ section > div:first-of-type button {
 body:not(:has(> aside)) {
   /* When there is no sidebar (landing page), undo flex layout */
   display: block;
-  background: #ffffff;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--landing-bg-start) 0%, var(--landing-bg-end) 100%);
+  padding-bottom: 48px;
 }
 
 /* Top nav */
 body:not(:has(> aside)) header nav {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 18px 20px;
+  padding: 24px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 body:not(:has(> aside)) header nav span {
@@ -698,34 +712,59 @@ body:not(:has(> aside)) header nav a {
   color: var(--text-muted);
 }
 
-/* Hero section */
-body:not(:has(> aside)) main > section:first-of-type {
+body:not(:has(> aside)) main {
+  width: 100%;
   max-width: 1120px;
-  margin: 40px auto 24px;
-  padding: 24px 20px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 72px;
+  padding: 0 32px 60px;
+}
+
+/* Hero section */
+body:not(:has(> aside)) main > section:first-of-type {
+  width: 100%;
+  margin: 32px auto 0;
+  padding: 40px 48px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 22px;
+  background: var(--card-gradient-soft), var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 32px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  color: var(--landing-card-text);
 }
 
 body:not(:has(> aside)) main > section:first-of-type h1 {
   font-size: 2.1rem;
-  max-width: 540px;
+  max-width: 620px;
+  text-align: center;
+  line-height: 1.25;
+  color: var(--landing-card-text);
 }
 
 body:not(:has(> aside)) main > section:first-of-type p {
-  max-width: 540px;
-  color: var(--text-muted);
+  max-width: 560px;
+  color: var(--landing-card-muted);
   font-size: 0.95rem;
+  text-align: center;
+  line-height: 1.6;
 }
 
 body:not(:has(> aside)) main > section:first-of-type button {
-  margin-top: 10px;
+  margin-top: 4px;
   padding: 10px 18px;
   border-radius: 999px;
   border: none;
   font-size: 0.95rem;
   cursor: pointer;
+  min-width: 200px;
+  align-self: center;
 }
 
 body:not(:has(> aside)) main > section:first-of-type button:first-of-type {
@@ -743,14 +782,22 @@ body:not(:has(> aside)) main > section:first-of-type button:last-of-type {
 /* Code example + explanation block */
 body:not(:has(> aside)) main > section:nth-of-type(2) > div {
   max-width: 1120px;
-  margin: 0 auto 32px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-  padding: 18px 20px;
+  gap: 24px;
+  background: var(--card-gradient-soft), var(--card-surface);
+  border-radius: 28px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  padding: 28px 32px;
+  backdrop-filter: blur(12px);
+  color: var(--landing-card-text);
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(2) {
+  width: 100%;
+  margin: 0 auto;
 }
 
 body:not(:has(> aside)) pre {
@@ -765,30 +812,50 @@ body:not(:has(> aside)) pre {
 /* “Why choose” & “How it works” sections */
 body:not(:has(> aside)) main > section:nth-of-type(3),
 body:not(:has(> aside)) main > section:nth-of-type(4) {
+  width: 100%;
   max-width: 1120px;
-  margin: 0 auto 32px;
-  padding: 0 20px;
+  margin: 0 auto;
+  padding: 32px 32px 0;
 }
 
 body:not(:has(> aside)) main > section:nth-of-type(3) h2,
 body:not(:has(> aside)) main > section:nth-of-type(4) h2 {
-  margin-bottom: 12px;
+  margin: 12px 0 18px;
+  text-align: center;
 }
 
 body:not(:has(> aside)) main > section:nth-of-type(3) > div,
 body:not(:has(> aside)) main > section:nth-of-type(4) > div {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 24px;
 }
 
 body:not(:has(> aside)) main > section:nth-of-type(3) > div > div,
 body:not(:has(> aside)) main > section:nth-of-type(4) > div > div {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 16px 16px 18px;
-  box-shadow: var(--shadow-light);
+  background: var(--card-gradient-soft), var(--card-surface);
+  border-radius: 20px;
+  padding: 20px 20px 22px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(10px);
   font-size: 0.9rem;
+  color: var(--landing-card-text);
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(3) > div > div h4,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div h4,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div h3,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div strong,
+body:not(:has(> aside)) main > section:nth-of-type(3) > div > div strong {
+  color: var(--landing-card-text);
+}
+
+body:not(:has(> aside)) main > section:nth-of-type(3) > div > div p,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div p,
+body:not(:has(> aside)) main > section:nth-of-type(3) > div > div span,
+body:not(:has(> aside)) main > section:nth-of-type(4) > div > div span {
+  color: var(--landing-card-text);
 }
 
 body:not(:has(> aside)) main > section:nth-of-type(4) h3 {
@@ -1184,6 +1251,46 @@ body:not(:has(> aside)) footer small {
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-main);
+}
+
+.email-history-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.email-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.email-history-header h2 {
+  margin: 0;
+  text-align: left;
+  margin-right: auto;
+}
+
+.email-history-header .text-link {
+  padding: 4px 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.email-history-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.show-more-history-btn {
+  min-width: 180px;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
 }
 
 .section-subtitle {

@@ -303,6 +303,24 @@
             background: rgba(255,255,255,0.08);
         }
 
+        .profile-menu__meta {
+            padding: 8px 14px 10px;
+            border-bottom: 1px solid rgba(148,163,184,0.2);
+            margin-bottom: 6px;
+        }
+
+        .profile-menu__meta strong {
+            display: block;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .profile-menu__meta span {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
         html[data-theme="light"] .profile-menu {
             box-shadow: 0 8px 18px rgba(15,23,42,0.18);
         }
@@ -360,8 +378,12 @@
                     <button id="profile-btn" class="icon-btn" title="Profile">👤</button>
 
                     <div id="profile-menu" class="profile-menu">
+                    <div class="profile-menu__meta">
+                        <strong data-profile-username>—</strong>
+                        <span data-profile-email>—</span>
+                    </div>
                     <a href="user_settings.html">Settings</a>
-                    <button id="logout-btn">Logout</button>
+                    <button id="logout-btn" data-logout>Logout</button>
                     </div>
                 </div>
 

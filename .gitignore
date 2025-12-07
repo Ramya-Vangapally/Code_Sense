@@ -1,0 +1,8 @@
+
+backend/node_modules/
+python_tasks/__pycache__/
+prometheus/
+grafana/
+*.env
+logs/
+.vscode/

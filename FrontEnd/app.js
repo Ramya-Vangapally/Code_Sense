@@ -156,6 +156,117 @@
     }
 }
 
+    function updateProfileSummary(user){
+        const safeName = user?.displayName || user?.username || '—';
+        const safeEmail = user?.email || '—';
+        document.querySelectorAll('[data-profile-name], [data-profile-username]').forEach(el => el.textContent = safeName);
+        document.querySelectorAll('[data-profile-email]').forEach(el => el.textContent = safeEmail);
+    }
+
+    async function initUserSettingsPage(currentUser){
+        const displayInput = document.getElementById('display-name');
+        const emailInput = document.getElementById('email');
+        const languageSelect = document.getElementById('language');
+        const passwordInput = document.getElementById('new-password');
+        const saveBtn = document.getElementById('save-settings-btn');
+        const statusEl = document.getElementById('settings-status');
+
+        if(!displayInput || !saveBtn){
+            return;
+        }
+
+        const setStatus = (message = '', isError = false) => {
+            if(!statusEl) return;
+            statusEl.textContent = message;
+            statusEl.classList.toggle('error', Boolean(isError && message));
+        };
+
+        const populateFields = (data = {}) => {
+            const fallbackName = currentUser?.displayName || currentUser?.username || '';
+            const fallbackEmail = currentUser?.email || '';
+            if(displayInput) displayInput.value = data.displayName || data.username || fallbackName;
+            if(emailInput){
+                emailInput.value = data.email || fallbackEmail;
+                emailInput.readOnly = true;
+            }
+            if(languageSelect){
+                const pref = data.preferredLanguage || currentUser?.preferredLanguage || 'Auto';
+                const options = Array.from(languageSelect.options || []);
+                const match = options.find(opt => opt.value === pref || opt.text === pref);
+                languageSelect.value = match ? match.value : 'Auto';
+            }
+        };
+
+        populateFields(currentUser || {});
+
+        try{
+            const res = await fetch(`${API_BASE}/user/settings`, {
+                credentials: 'include',
+                method: 'GET'
+            });
+            const data = await res.json().catch(()=>({}));
+            if(!res.ok){
+                throw new Error(data.message || 'Unable to load settings');
+            }
+            populateFields(data);
+            setStatus('');
+        }catch(err){
+            setStatus(err.message || 'Unable to load settings', true);
+        }
+
+        saveBtn.addEventListener('click', async ()=>{
+            const displayName = displayInput.value.trim() || currentUser?.username || '';
+            if(!displayName){
+                setStatus('Display name is required.', true);
+                return;
+            }
+
+            const preferredLanguage = languageSelect?.value || 'Auto';
+            const payload = { displayName, preferredLanguage };
+            const newPassword = passwordInput?.value?.trim();
+            if(newPassword){
+                if(newPassword.length < 6){
+                    setStatus('Password must be at least 6 characters.', true);
+                    return;
+                }
+                payload.newPassword = newPassword;
+            }
+
+            saveBtn.disabled = true;
+            setStatus('Saving...');
+
+            try{
+                const res = await fetch(`${API_BASE}/user/settings`, {
+                    credentials: 'include',
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json().catch(()=>({}));
+                if(!res.ok){
+                    throw new Error(data.message || 'Unable to save settings');
+                }
+
+                if(passwordInput) passwordInput.value = '';
+                setStatus('Settings saved');
+
+                if(data.user){
+                    populateFields(data.user);
+                    if(currentUser){
+                        currentUser.displayName = data.user.displayName || data.user.username;
+                        currentUser.preferredLanguage = data.user.preferredLanguage || 'Auto';
+                        currentUser.email = data.user.email || currentUser.email;
+                        updateProfileSummary(currentUser);
+                    }
+                }
+            }catch(err){
+                setStatus(err.message || 'Unable to save settings', true);
+            }finally{
+                saveBtn.disabled = false;
+            }
+        });
+    }
+
 
     function setupAuthModal(modalElement){
         if(!modalElement || modalElement.dataset.authWired === 'true') return;
@@ -167,6 +278,9 @@
         const loginForm = modalElement.querySelector('#loginForm');
         const signupForm = modalElement.querySelector('#signupForm');
         const helperText = modalElement.querySelector('#authHelperText');
+        const helperLead = helperText?.querySelector('[data-helper-lead]') || null;
+        const helperTrail = helperText?.querySelector('[data-helper-trail]') || null;
+        const helperLink = helperText?.querySelector('[data-target-mode]') || null;
         const messageBox = modalElement.querySelector('#authMessage');
 
         const showMessage = (text = '', type = 'error') => {
@@ -182,17 +296,38 @@
             messageBox.className = 'auth-message ' + (type === 'success' ? 'success' : '');
         };
 
+        const updateHelperText = (mode) => {
+            if(!helperText) return;
+            if(helperLead && helperTrail && helperLink){
+                const isSignup = mode === 'signup';
+                helperLead.textContent = isSignup ? 'Already have an account?' : 'Need an account?';
+                helperTrail.textContent = isSignup ? 'to continue.' : 'to get started.';
+                helperLink.textContent = isSignup ? 'Login' : 'Sign Up';
+                helperLink.dataset.targetMode = isSignup ? 'login' : 'signup';
+            } else {
+                helperText.textContent = mode === 'signup'
+                    ? 'Already have an account? Switch back to Login.'
+                    : 'Need an account? Click Sign Up to get started.';
+            }
+        };
+
         const switchMode = (mode) => {
             modeButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
             if(loginForm) loginForm.classList.toggle('active', mode === 'login');
             if(signupForm) signupForm.classList.toggle('active', mode === 'signup');
-            if(helperText) helperText.textContent = mode === 'signup' 
-                ? 'Already have an account? Switch back to Login.'
-                : 'Need an account? Click Sign Up to get started.';
+            updateHelperText(mode);
             showMessage('');
         };
+
+        if(helperLink){
+            helperLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = helperLink.dataset.targetMode || 'signup';
+                switchMode(target);
+            });
+        }
 
         modeButtons.forEach(btn => {
             btn.addEventListener('click', () => switchMode(btn.dataset.mode));
@@ -412,6 +547,11 @@ window.googleLoaded = () => {
 
     const username = currentUser?.username || null;
 
+    window.currentUser = currentUser;
+    if(currentUser){
+        updateProfileSummary(currentUser);
+    }
+
         const footerNameEl = document.getElementById('admin-footer-name');
         const footerEmailEl = document.getElementById('admin-footer-email');
         if(footerNameEl || footerEmailEl){
@@ -468,6 +608,14 @@ window.googleLoaded = () => {
 
         const tryNow = document.getElementById('try-now');
         if(tryNow) tryNow.addEventListener('click', ()=> showLoginModal());
+
+        if(path.includes('user_settings.html')){
+            try{
+                await initUserSettingsPage(currentUser);
+            }catch(e){
+                console.log('Settings init failed', e);
+            }
+        }
 
         // helper to save history AFTER explanation
         async function saveHistoryAfterExplain(){

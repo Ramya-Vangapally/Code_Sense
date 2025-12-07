@@ -3,6 +3,12 @@
     ? "http://127.0.0.1:5000"
     : "http://localhost:5000";
 
+  const INITIAL_HISTORY_COUNT = 5;
+  const HISTORY_INCREMENT = 10;
+
+  let emailHistoryCache = [];
+  let visibleHistoryCount = INITIAL_HISTORY_COUNT;
+
   async function fetchUsers(){
     try{
       const res = await fetch(`${API_BASE}/get-users`, { credentials: 'include' });
@@ -79,6 +85,48 @@
       tr.appendChild(status);
       tbody.appendChild(tr);
     });
+  }
+
+  function sortEmailHistory(rows = []){
+    return rows.slice().sort((a, b) => {
+      return new Date(b?.sentAt || 0) - new Date(a?.sentAt || 0);
+    });
+  }
+
+  function setEmailHistory(rows = []){
+    emailHistoryCache = sortEmailHistory(Array.isArray(rows) ? rows : []);
+    visibleHistoryCount = emailHistoryCache.length === 0
+      ? 0
+      : Math.min(INITIAL_HISTORY_COUNT, emailHistoryCache.length);
+    applyEmailHistoryView();
+  }
+
+  function applyEmailHistoryView(){
+    const subset = emailHistoryCache.slice(0, visibleHistoryCount || 0);
+    renderEmailHistory(subset);
+    updateHistoryControls();
+  }
+
+  function updateHistoryControls(){
+    const showMoreBtn = document.getElementById('show-more-history');
+    const showAllBtn = document.getElementById('show-all-history');
+    const total = emailHistoryCache.length;
+    const canShowMore = total > visibleHistoryCount;
+
+    if(showMoreBtn){
+      if(total === 0){
+        showMoreBtn.style.display = 'none';
+      } else {
+        showMoreBtn.style.display = 'inline-flex';
+        showMoreBtn.disabled = !canShowMore;
+        showMoreBtn.textContent = canShowMore ? 'Show more' : 'No more emails';
+      }
+    }
+
+    if(showAllBtn){
+      showAllBtn.style.visibility = total ? 'visible' : 'hidden';
+      showAllBtn.disabled = total === 0 || visibleHistoryCount >= total;
+    }
   }
 
   async function fetchActiveUsage(days = 14){
@@ -199,14 +247,15 @@
           })
       });
 
+          const data = await res.json().catch(()=>({}));
           if(!res.ok) throw new Error(data.message || 'Failed to send');
-          alert('Emails sent successfully');
+          alert(data.message || 'Emails sent successfully');
           form.reset();
           if(customSelection) customSelection.style.display = 'none';
           // refresh history and chart
           try{
             const rows = await fetchEmailHistory();
-            renderEmailHistory(rows);
+            setEmailHistory(rows);
             const usage = await fetchActiveUsage();
             renderActiveChart(usage.labels, usage.counts);
           }catch(e){ console.error('refresh failed', e); }
@@ -216,6 +265,29 @@
         }
       });
     }
+
+    const showMoreBtn = document.getElementById('show-more-history');
+    if(showMoreBtn){
+      showMoreBtn.addEventListener('click', ()=>{
+        if(emailHistoryCache.length === 0) return;
+        const nextCount = Math.min(visibleHistoryCount + HISTORY_INCREMENT, emailHistoryCache.length);
+        if(nextCount !== visibleHistoryCount){
+          visibleHistoryCount = nextCount;
+          applyEmailHistoryView();
+        }
+      });
+    }
+
+    const showAllBtn = document.getElementById('show-all-history');
+    if(showAllBtn){
+      showAllBtn.addEventListener('click', ()=>{
+        if(emailHistoryCache.length === 0) return;
+        visibleHistoryCount = emailHistoryCache.length;
+        applyEmailHistoryView();
+      });
+    }
+
+    updateHistoryControls();
   }
 
   document.addEventListener('DOMContentLoaded', async ()=>{
@@ -225,7 +297,7 @@
     // load history and active usage chart
     try{
       const rows = await fetchEmailHistory();
-      renderEmailHistory(rows);
+      setEmailHistory(rows);
       const usage = await fetchActiveUsage();
       renderActiveChart(usage.labels, usage.counts);
     }catch(e){ console.error(e); }

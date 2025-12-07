@@ -7,17 +7,36 @@ const Login = require("./models/User.js");
 const User_history = require("./models/History.js");
 const EmailHistory = require("./models/EmailHistory.js");
 const client = require('prom-client');
-// Prometheus counters for languages and user actions
-// const languageCounter = new client.Counter({
-//   name: 'app_language_r equests_total',
-//   help: 'Total number of requests per language (from history)',
-//   labelNames: ['language']
-// });
-// const userActionsCounter = new client.Counter({
-//   name: 'app_user_actions_total',
-//   help: 'Total number of user actions recorded',
-//   labelNames: ['username']
-// });
+
+client.collectDefaultMetrics({ prefix: 'code3sense_' });
+
+const loginCounter = new client.Counter({
+  name: 'code3sense_user_logins_total',
+  help: 'Total number of user logins',
+  labelNames: ['user_type'],
+});
+
+const registrationCounter = new client.Counter({
+  name: 'code3sense_registration_total',
+  help: 'Total number of successful registrations',
+});
+
+const activeGauge = new client.Gauge({
+  name: 'code3sense_active_users',
+  help: 'Current number of active users',
+});
+
+const sessionHistogram = new client.Histogram({
+  name: 'code3sense_session_duration_seconds',
+  help: 'Observed session durations in seconds',
+  buckets: [5, 15, 30, 60, 120, 300, 600],
+});
+
+const adminHistoryCounter = new client.Counter({
+  name: 'code3sense_admin_history_total',
+  help: 'Total number of admin history actions',
+  labelNames: ['action'],
+});
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
@@ -97,6 +116,29 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ message: "Admin access only" });
   }
   next();
+}
+
+async function loadUserFromSession(req) {
+  const sessionUser = req.session?.user;
+  if (!sessionUser) return null;
+
+  const query = sessionUser.email
+    ? { email: sessionUser.email }
+    : sessionUser.username
+    ? { username: sessionUser.username }
+    : null;
+
+  if (!query) return null;
+
+  const userDoc = await Login.findOne(query);
+  if (userDoc) {
+    req.session.user.email = userDoc.email;
+    req.session.user.username = userDoc.username;
+    req.session.user.displayName = userDoc.displayName || userDoc.username;
+    req.session.user.preferredLanguage = userDoc.preferredLanguage || "Auto";
+  }
+
+  return userDoc;
 }
 // STEP 1: user submits email+username+password, we send OTP and store data in Redis (temporary)
 app.post('/register/request-otp', async (req, res) => {
@@ -197,12 +239,17 @@ app.post('/register', async (req, res) => {
     const user = await Login.create({
       email: pending.email,
       username: pending.username,
+      displayName: pending.username,
       password: pending.passwordHash,
+      preferredLanguage: "Auto",
       role: "user"
     });
 
     // Clear temp data
     await redisClient.del(key);
+
+    // PROMETHEUS: increment registration counter here
+    registrationCounter.inc();
 
     return res.json({
       message: "Account created successfully",
@@ -239,9 +286,14 @@ app.post('/admin/create-user', requireAdmin, async (req, res) => {
     const newUser = await Login.create({
       email: email.toLowerCase(),
       username,
+        displayName: username,
       password: hashed,
+        preferredLanguage: "Auto",
       role: role === "admin" ? "admin" : "user"
     });
+
+    // PROMETHEUS: increment registration counter here
+    registrationCounter.inc();
 
     return res.json({
       message: "User created successfully",
@@ -272,8 +324,14 @@ app.post('/login', async (req, res) => {
   req.session.user = {
     username: user.username,
     email: user.email,
-    role: user.role
+    role: user.role,
+    displayName: user.displayName || user.username,
+    preferredLanguage: user.preferredLanguage || "Auto"
   };
+
+  // PROMETHEUS: increment login counter here
+  loginCounter.inc({ user_type: user.role || 'user' }, 1);
+  req.session.createdAt = Date.now();
 
   const token = generateToken(user); // NEW
 
@@ -282,7 +340,9 @@ app.post('/login', async (req, res) => {
       token,                      // NEW
       username: user.username,
       email: user.email,
-      role: user.role
+      role: user.role,
+      displayName: user.displayName || user.username,
+      preferredLanguage: user.preferredLanguage || "Auto"
     });
   });
 });
@@ -306,6 +366,8 @@ app.post("/auth/google", async (req, res) => {
 
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
+    const derivedUsername = (email && email.split("@")[0]) || googleId;
+    const derivedDisplayName = name || derivedUsername;
 
     // 2. Check if user already exists
     let user = await Login.findOne({ email });
@@ -314,7 +376,9 @@ app.post("/auth/google", async (req, res) => {
     if (!user) {
       user = await Login.create({
         email,
-        username: email.split("@")[0], // default username
+        username: derivedUsername,
+        displayName: derivedDisplayName,
+        preferredLanguage: "Auto",
         googleId,
         picture,
         role: "user",
@@ -326,7 +390,9 @@ app.post("/auth/google", async (req, res) => {
     req.session.user = {
       username: user.username,
       email: user.email,
-      role: user.role
+      role: user.role,
+      displayName: user.displayName || user.username,
+      preferredLanguage: user.preferredLanguage || "Auto"
     };
 
     // 5. Create your own JWT
@@ -337,7 +403,9 @@ app.post("/auth/google", async (req, res) => {
       token,
       username: user.username,
       email: user.email,
-      role: user.role
+      role: user.role,
+      displayName: user.displayName || user.username,
+      preferredLanguage: user.preferredLanguage || "Auto"
     });
 
   } catch (err) {
@@ -348,17 +416,94 @@ app.post("/auth/google", async (req, res) => {
 
 
 app.post('/logout', (req,res)=>{
+  const createdAt = req.session?.createdAt;
+  if (createdAt) {
+    const durationSeconds = (Date.now() - createdAt) / 1000;
+    // PROMETHEUS: observe session duration here
+    sessionHistogram.observe(durationSeconds);
+  }
+
   req.session.destroy(()=>{
     res.clearCookie('connect.sid');
     res.json({ message: "Logged out" });
   });
 });
 
-app.get('/me', (req, res) => {
+app.get('/me', async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json(null);
   }
-  return res.json(req.session.user); // { username, role }
+
+  try {
+    const userDoc = await loadUserFromSession(req);
+    if (!userDoc) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.json(req.session.user);
+  } catch (err) {
+    console.error('session lookup error', err);
+    return res.status(500).json({ message: "Unable to load session" });
+  }
+});
+
+app.get('/user/settings', requireLogin, async (req, res) => {
+  try {
+    const user = await loadUserFromSession(req);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    return res.json({
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName || user.username,
+      preferredLanguage: user.preferredLanguage || "Auto"
+    });
+  } catch (err) {
+    console.error('settings fetch error', err);
+    return res.status(500).json({ message: "Unable to load settings" });
+  }
+});
+
+app.patch('/user/settings', requireLogin, async (req, res) => {
+  const { displayName, preferredLanguage, newPassword } = req.body || {};
+
+  try {
+    const user = await loadUserFromSession(req);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (typeof displayName === 'string' && displayName.trim()) {
+      user.displayName = displayName.trim();
+    }
+
+    if (typeof preferredLanguage === 'string' && preferredLanguage.trim()) {
+      user.preferredLanguage = preferredLanguage.trim();
+    }
+
+    if (newPassword) {
+      if (typeof newPassword !== 'string' || newPassword.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    await user.save();
+
+    req.session.user.displayName = user.displayName || user.username;
+    req.session.user.preferredLanguage = user.preferredLanguage || "Auto";
+    req.session.user.email = user.email;
+
+    return res.json({
+      message: "Settings updated",
+      user: {
+        username: user.username,
+        email: user.email,
+        displayName: user.displayName || user.username,
+        preferredLanguage: user.preferredLanguage || "Auto"
+      }
+    });
+  } catch (err) {
+    console.error('settings update error', err);
+    return res.status(500).json({ message: "Unable to save settings" });
+  }
 });
 
 
@@ -366,6 +511,9 @@ app.get('/me', (req, res) => {
 app.get('/get-users',requireAdmin, async (req,res) => {
   try{
     const users = await Login.find({}, {password: 0});
+
+    // PROMETHEUS: update active users gauge here
+    activeGauge.set(users.length);
     res.json(users);
   } catch(e){
     res.status(404).json({message: e});
@@ -467,12 +615,11 @@ app.get('/admin/active-usage', requireAdmin, async (req, res) => {
   }
 });
 
-// Prometheus metrics
-client.collectDefaultMetrics();
+// Prometheus metrics endpoint
 app.get('/metrics', async (req, res) => {
   try {
     res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
+    res.send(await client.register.metrics());
   } catch (err) {
     res.status(500).end(err.message);
   }
@@ -491,12 +638,8 @@ app.post('/add-history', async (req, res) => {
   const { username, role, action, language } = req.body;
   try {
     const history = await User_history.create({ username, role, action, language });
-    // Update Prometheus counters
-    try{
-      const lang = (language || 'unknown').toString();
-      languageCounter.inc({ language: lang }, 1);
-      userActionsCounter.inc({ username: username }, 1);
-    }catch(e){ console.warn('metric update failed', e); }
+    // PROMETHEUS: count admin history actions here
+    adminHistoryCounter.inc({ action: action || 'create' });
 
     res.json({ message: `History saved for: ${username}`, history });
   } catch (e) {

@@ -111,8 +111,11 @@
 
       <!-- Email History Section -->
       <section class="email-history-section">
-        <div class="email-card">
-          <h2>Recent Emails</h2>
+        <div class="email-card email-history-card">
+          <div class="email-history-header">
+            <h2>Bulk Email</h2>
+            <button type="button" id="show-all-history" class="text-link">Show all</button>
+          </div>
           <table class="email-history-table">
             <thead>
               <tr>
@@ -126,6 +129,9 @@
               <!-- populated by admin_email.js -->
             </tbody>
           </table>
+          <div class="email-history-footer">
+            <button type="button" id="show-more-history" class="btn-secondary show-more-history-btn">Show more</button>
+          </div>
           <!-- Active usage chart removed as requested -->
         </div>
       </section>

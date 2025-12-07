@@ -31,15 +31,68 @@
         display: none;
         flex-direction: column;
         width: 100%;
+        gap: 12px;
       }
       .auth-form.active {
         display: flex;
+      }
+      .auth-form.signup-form {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(14, 165, 233, 0.12));
+        border-radius: 18px;
+        padding: 20px 18px;
+        margin-top: 22px;
+        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+        max-height: min(62vh, 520px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(99, 102, 241, 0.5) transparent;
+      }
+      .auth-form.signup-form::-webkit-scrollbar {
+        width: 6px;
+      }
+      .auth-form.signup-form::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.5);
+        border-radius: 999px;
       }
       .auth-helper {
         font-size: 13px;
         color: #6b7280;
         text-align: center;
         margin-top: 10px;
+      }
+      .auth-helper__link {
+        background: none;
+        border: none;
+        color: #6366f1;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0 2px;
+      }
+      .auth-helper__link:hover {
+        text-decoration: underline;
+      }
+      .social-auth-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 18px auto 24px;
+        padding: 16px 12px;
+        width: 100%;
+        border-radius: 18px;
+        background: rgba(99, 102, 241, 0.06);
+      }
+      .social-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #9ca3af;
+      }
+      .google-btn-slot {
+        width: 100%;
+        display: flex;
+        justify-content: center;
       }
       .auth-message {
         margin-top: 8px;
@@ -56,12 +109,7 @@
   <body>
     <header>
       <nav>
-        <div class="logo-section">
-          <div class="brand-logo">
-            <span>&lt;/&gt;</span>
-          </div>
-          <span>CodeSense</span>
-        </div>
+        <span>CodeSense</span>
         <div>
           <a href="#" id="dashboard-link"></a>
         </div>
@@ -79,7 +127,7 @@
           Support for all programming languages with AI-powered analysis.
         </p>
     
-        <button id="go-dashboard">Try Now </button>
+        <button id="go-dashboard">Login/Sign Up</button>
       </section>
       <section>
         <div>
@@ -168,8 +216,12 @@ function fibonacci(n) {
         </form>
 
         
+        <div class="social-auth-block" aria-live="polite">
+          <span class="social-label">or continue with</span>
+          <div id="googleBtn" class="google-btn-slot"></div>
+        </div>
 
-        <form id="signupForm" class="auth-form">
+        <form id="signupForm" class="auth-form signup-form">
           <input type="email" id="signupEmail" placeholder="Email address" required />
           <input type="text" id="signupUsername" placeholder="Username" required />
           <input type="password" id="signupPassword" placeholder="Password" required />
@@ -179,7 +231,11 @@ function fibonacci(n) {
            <div class="google-btn" style="margin-top:15px;"></div>
         </form>
 
-        <p class="auth-helper" id="authHelperText">Need an account? Click Sign Up to get started.</p>
+        <p class="auth-helper" id="authHelperText">
+          <span class="auth-helper__lead" data-helper-lead>Need an account?</span>
+          <button type="button" class="auth-helper__link" data-target-mode="signup">Sign Up</button>
+          <span class="auth-helper__trail" data-helper-trail>to get started.</span>
+        </p>
         <div class="auth-message" id="authMessage"></div>
       </div>
     </div>
