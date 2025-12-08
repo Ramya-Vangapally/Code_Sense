@@ -6,6 +6,7 @@ connectDB();
 const Login = require("./models/User.js");
 const User_history = require("./models/History.js");
 const EmailHistory = require("./models/EmailHistory.js");
+const ModelSettings = require("./models/ModelSettings.js");
 const client = require('prom-client');
 
 client.collectDefaultMetrics({ prefix: 'code3sense_' });
@@ -116,6 +117,46 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ message: "Admin access only" });
   }
   next();
+}
+
+const EXPLANATION_LENGTH_HINTS = {
+  concise: "Keep explanations concise (around 50-100 words) while covering the key ideas.",
+  medium: "Provide a balanced explanation (roughly 100-200 words) with key details and rationale.",
+  detailed: "Provide a thorough explanation (200+ words) that walks through the code step-by-step."
+};
+
+async function getOrCreateModelSettings() {
+  let doc = await ModelSettings.findOne();
+  if (!doc) {
+    doc = await ModelSettings.create({});
+  }
+  return doc;
+}
+
+function serializeModelSettings(doc) {
+  if (!doc) return null;
+  return {
+    explanationLength: doc.explanationLength,
+    temperature: doc.temperature,
+    maxTokens: doc.maxTokens,
+    enableHighlighting: doc.enableHighlighting,
+    updatedBy: doc.updatedBy || null,
+    updatedAt: doc.updatedAt || null
+  };
+}
+
+function clampNumber(value, min, max) {
+  const num = typeof value === 'number' ? value : parseFloat(value);
+  if (Number.isNaN(num)) return min;
+  return Math.min(max, Math.max(min, num));
+}
+
+function coerceBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true' || value === '1' || value.toLowerCase() === 'yes';
+  }
+  return Boolean(value);
 }
 
 async function loadUserFromSession(req) {
@@ -506,6 +547,51 @@ app.patch('/user/settings', requireLogin, async (req, res) => {
   }
 });
 
+app.get('/admin/model-settings', requireAdmin, async (req, res) => {
+  try {
+    const settings = await getOrCreateModelSettings();
+    return res.json(serializeModelSettings(settings));
+  } catch (err) {
+    console.error('model settings fetch error', err);
+    return res.status(500).json({ message: 'Unable to load model settings' });
+  }
+});
+
+app.patch('/admin/model-settings', requireAdmin, async (req, res) => {
+  try {
+    const settings = await getOrCreateModelSettings();
+    const { explanationLength, temperature, maxTokens, enableHighlighting } = req.body || {};
+
+    if (explanationLength && EXPLANATION_LENGTH_HINTS[explanationLength]) {
+      settings.explanationLength = explanationLength;
+    }
+
+    if (typeof temperature !== 'undefined') {
+      settings.temperature = parseFloat(clampNumber(temperature, 0, 1).toFixed(2));
+    }
+
+    if (typeof maxTokens !== 'undefined') {
+      settings.maxTokens = Math.round(clampNumber(maxTokens, 50, 2000));
+    }
+
+    if (typeof enableHighlighting !== 'undefined') {
+      settings.enableHighlighting = coerceBoolean(enableHighlighting);
+    }
+
+    settings.updatedBy = req.session.user?.username || 'admin';
+    settings.updatedAt = new Date();
+    await settings.save();
+
+    return res.json({
+      message: 'Model settings updated',
+      settings: serializeModelSettings(settings)
+    });
+  } catch (err) {
+    console.error('model settings update error', err);
+    return res.status(500).json({ message: 'Unable to update model settings' });
+  }
+});
+
 
 
 app.get('/get-users',requireAdmin, async (req,res) => {
@@ -675,7 +761,26 @@ app.post("/api/explain", async (req, res) => {
     return res.status(400).json({ message: "Code snippet is required" });
   }
 
+  let modelSettings = null;
+  try {
+    modelSettings = await getOrCreateModelSettings();
+  } catch (err) {
+    console.warn('model settings unavailable, using defaults', err?.message || err);
+  }
+
+  const lengthKey = modelSettings?.explanationLength || 'concise';
+  const lengthHint = EXPLANATION_LENGTH_HINTS[lengthKey] || EXPLANATION_LENGTH_HINTS.concise;
+  const highlightHint = modelSettings?.enableHighlighting
+    ? 'Use fenced Markdown code blocks with language identifiers when you include code snippets.'
+    : '';
+
+  const temperature = clampNumber(modelSettings?.temperature ?? 0.4, 0, 1);
+  const maxTokens = Math.round(clampNumber(modelSettings?.maxTokens ?? 500, 50, 2000));
+
   const prompt = `
+${lengthHint}
+${highlightHint}
+
 Explain this ${language} code in simple steps.
 Break down logic and purpose clearly for a beginner.
 
@@ -691,8 +796,8 @@ ${code}
         messages: [
           { role: "user", content: prompt }
         ],
-        temperature: 0.4,
-        max_completion_tokens: 1500
+        temperature,
+        max_completion_tokens: maxTokens
       },
       {
         headers: {

@@ -568,22 +568,32 @@ input[type="number"]:focus {
   box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
 }
 
-/* Slider placeholder */
-section > div:nth-of-type(2) > div {
-  height: 6px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  position: relative;
-  margin: 8px 0 4px;
+.temperature-slider {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
 }
 
-section > div:nth-of-type(2) > div::before {
-  content: "";
-  position: absolute;
-  height: 100%;
-  width: 70%;
-  border-radius: inherit;
-  background: var(--accent-gradient);
+.temperature-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.temperature-slider [data-temp-value] {
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+}
+
+.form-status {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 6px;
+}
+
+.form-status.error {
+  color: var(--danger);
 }
 
 /* Checkbox */
@@ -1849,5 +1859,47 @@ header nav {
 .blur {
   filter: blur(6px);
   transition: 0.3s ease;
+}
+
+/* Wrapper for Google button */
+.google-btn {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Slight zoom for better visibility */
+.google-btn > div {
+  transform: scale(1.08);
+}
+
+/* OR divider text */
+.google-divider {
+  margin: 14px 0 8px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  position: relative;
+  width: 100%;
+}
+
+.google-divider::before,
+.google-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.google-divider::before {
+  left: 0;
+}
+
+.google-divider::after {
+  right: 0;
 }
 

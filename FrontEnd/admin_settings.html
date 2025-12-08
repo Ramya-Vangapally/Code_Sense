@@ -20,7 +20,6 @@
               <li><a href="admin.html">Dashboard</a></li>
               <li><a href="admin_user_management.html">User Management</a></li>
               <li><a href="admin_email.html">Bulk Email</a></li>
-              <li><a href="logs.html">Logs</a></li>
               <li><a href="admin_settings.html">Model Settings</a></li>
             </ul>
         </nav>
@@ -37,7 +36,7 @@
             <nav>
                 <div>
                     <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
-                    <a href="#" class="logout-link">Log out</a>
+                    <a href="#" class="logout-link" data-logout>Log out</a>
                 </div>
             </nav>
         </header>
@@ -45,34 +44,39 @@
             <div>
                 <h2>Explanation length</h2>
                 <p>Default length for generated explanations</p>
-                <select id="length">
+                <select id="model-length">
                     <option value="concise">Concise (50-100 words)</option>
-                    <option value="medium">Medium Length (100-200 words)</option>
-                    <option value="detailed">Detailed (200-300 words)</option>
+                    <option value="medium">Balanced (100-200 words)</option>
+                    <option value="detailed">Detailed (200-300+ words)</option>
                 </select>
             </div>
             <div>
                 <h2>Model Temperature</h2>
-                <p>Controls randomness in responses(0-1)</p>
-                <div></div>
-                <span>More Deterministic</span>
-                <span>0.7</span>
-                <span>More Creative</span>
+                <p>Controls randomness in responses (0-1)</p>
+                <div class="temperature-slider">
+                    <span>More Deterministic</span>
+                    <input type="range" id="model-temperature" min="0" max="1" step="0.05" value="0.7" aria-label="Model temperature">
+                    <span data-temp-value>0.70</span>
+                    <span>More Creative</span>
+                </div>
             </div>
             <div>
                 <h2>Max Tokens</h2>
                 <p>Maximum tokens for response generation</p>
-                <div>500</div>
+                <input type="number" id="max-tokens" min="50" max="2000" step="10" value="500" placeholder="500">
             </div>
             <div>
                 <h2>Enable Code Syntax Highlighting</h2>
                 <p>Show syntax highlighting in explanations</p>
-                <input type="checkbox" value="yes" id="highlight">
-                <label for="highlight">Enable highlighting</label>
+                <label for="highlight">
+                    <input type="checkbox" id="highlight">
+                    <span>Enable highlighting</span>
+                </label>
             </div>
         </section>
         <footer>
-            <button>Save Settings</button>
+            <p id="model-settings-status" class="form-status" role="status"></p>
+            <button id="save-model-settings" class="btn-primary" type="button">Save Settings</button>
         </footer>
     </main>
     <script src="app.js"></script>

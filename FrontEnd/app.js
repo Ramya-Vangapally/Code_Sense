@@ -267,6 +267,126 @@
         });
     }
 
+    async function initAdminModelSettingsPage(currentUser){
+        if(!currentUser || currentUser.role !== 'admin'){
+            window.location.href = 'user.html';
+            return;
+        }
+
+        const lengthSelect = document.getElementById('model-length');
+        const temperatureInput = document.getElementById('model-temperature');
+        const temperatureDisplay = document.querySelector('[data-temp-value]');
+        const tokenInput = document.getElementById('max-tokens');
+        const highlightInput = document.getElementById('highlight');
+        const saveBtn = document.getElementById('save-model-settings');
+        const statusEl = document.getElementById('model-settings-status');
+
+        if(!lengthSelect || !saveBtn){
+            return;
+        }
+
+        const setStatus = (message = '', isError = false) => {
+            if(!statusEl) return;
+            statusEl.textContent = message;
+            statusEl.classList.toggle('error', Boolean(isError && message));
+        };
+
+        const syncTemperatureLabel = () => {
+            if(!temperatureDisplay || !temperatureInput) return;
+            const value = parseFloat(temperatureInput.value || '0').toFixed(2);
+            temperatureDisplay.textContent = value;
+        };
+
+        if(temperatureInput){
+            temperatureInput.addEventListener('input', syncTemperatureLabel);
+            syncTemperatureLabel();
+        }
+
+        const applySettings = (settings = {}) => {
+            if(lengthSelect && settings.explanationLength){
+                lengthSelect.value = settings.explanationLength;
+            }
+            if(temperatureInput && typeof settings.temperature !== 'undefined'){
+                const sliderVal = typeof settings.temperature === 'number'
+                    ? settings.temperature
+                    : parseFloat(settings.temperature);
+                if(!Number.isNaN(sliderVal)){
+                    temperatureInput.value = sliderVal;
+                    syncTemperatureLabel();
+                }
+            }
+            if(tokenInput && typeof settings.maxTokens !== 'undefined'){
+                tokenInput.value = settings.maxTokens;
+            }
+            if(highlightInput){
+                highlightInput.checked = Boolean(settings.enableHighlighting);
+            }
+        };
+
+        try{
+            const res = await fetch(`${API_BASE}/admin/model-settings`, {
+                credentials: 'include'
+            });
+            const data = await res.json().catch(()=>({}));
+            if(!res.ok){
+                throw new Error(data.message || 'Unable to load model settings');
+            }
+            applySettings(data);
+            setStatus('');
+        }catch(err){
+            setStatus(err.message || 'Unable to load model settings', true);
+        }
+
+        saveBtn.addEventListener('click', async ()=>{
+            let temperatureValue = temperatureInput ? parseFloat(temperatureInput.value || '0.7') : 0.7;
+            if(Number.isNaN(temperatureValue)){
+                temperatureValue = 0.7;
+            }
+
+            let tokenValue = tokenInput ? parseInt(tokenInput.value || '0', 10) : 500;
+            if(Number.isNaN(tokenValue)){
+                setStatus('Enter a valid number of tokens.', true);
+                return;
+            }
+
+            if(tokenValue < 50 || tokenValue > 2000){
+                setStatus('Max tokens must be between 50 and 2000.', true);
+                return;
+            }
+
+            const payload = {
+                explanationLength: lengthSelect.value,
+                temperature: temperatureValue,
+                maxTokens: tokenValue,
+                enableHighlighting: highlightInput ? highlightInput.checked : false
+            };
+
+            setStatus('Saving...');
+            saveBtn.disabled = true;
+
+            try{
+                const res = await fetch(`${API_BASE}/admin/model-settings`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json().catch(()=>({}));
+                if(!res.ok){
+                    throw new Error(data.message || 'Unable to update settings');
+                }
+                if(data.settings){
+                    applySettings(data.settings);
+                }
+                setStatus('Settings saved');
+            }catch(err){
+                setStatus(err.message || 'Unable to update settings', true);
+            }finally{
+                saveBtn.disabled = false;
+            }
+        });
+    }
+
 
     function setupAuthModal(modalElement){
         if(!modalElement || modalElement.dataset.authWired === 'true') return;
@@ -497,27 +617,23 @@ window.handleGoogleLogin = async (response) => {
   }
 };
 
-// Google script onload handler (global)
 window.googleLoaded = () => {
   console.log("Google script loaded!");
 
-  if (window.google && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: "158001809006-6vbn09scbhbeud9njlov8gvl7judjuvf.apps.googleusercontent.com",
-      callback: handleGoogleLogin
-    });
+  google.accounts.id.initialize({
+    client_id: "158001809006-6vbn09scbhbeud9njlov8gvl7judjuvf.apps.googleusercontent.com",
+    callback: handleGoogleLogin
+  });
 
-    // Render button if modal already visible
-    const btn = document.getElementById("googleBtn");
-    if (btn) {
-      google.accounts.id.renderButton(btn, {
-        theme: "outline",
-        size: "large",
-        width: "280"
-      });
-    }
-  }
+  document.querySelectorAll(".google-btn").forEach(btn => {
+    google.accounts.id.renderButton(btn, {
+      theme: "outline",
+      size: "large",
+      width: "280"
+    });
+  });
 };
+
 
     document.addEventListener('DOMContentLoaded', async ()=>{
 
@@ -531,7 +647,6 @@ window.googleLoaded = () => {
         "admin_user_management.html",
         "admin_email.html",
         "admin_settings.html",
-        "logs.html",
         "user.html",
         "user_settings.html",
         "user_history.html"
@@ -618,6 +733,12 @@ window.googleLoaded = () => {
                 await initUserSettingsPage(currentUser);
             }catch(e){
                 console.log('Settings init failed', e);
+            }
+        } else if(path.includes('admin_settings.html')){
+            try{
+                await initAdminModelSettingsPage(currentUser);
+            }catch(e){
+                console.log('Admin settings init failed', e);
             }
         }
 
