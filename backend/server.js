@@ -63,7 +63,11 @@ function generateOtp() {
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const Redis = require("ioredis");
-const redisClient = new Redis();
+const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
 // app.set("trust proxy", 1);
 
