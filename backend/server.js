@@ -94,7 +94,7 @@ app.set("trust proxy", 1);
 redisClient.once("ready", () => {
   app.use(session({
     store: new RedisStore({ client: redisClient }),
-    secret: "super-secret-key",
+    secret:  process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
