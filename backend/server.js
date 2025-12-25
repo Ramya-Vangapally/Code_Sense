@@ -63,11 +63,35 @@ function generateOtp() {
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const Redis = require("ioredis");
+
+// Redis readiness flag
+let redisReady = false;
+
 const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   tls: {
     rejectUnauthorized: false
-  }
-  ,lazyConnect: true
+  },
+  lazyConnect: true
+});
+
+// Redis lifecycle listeners
+redisClient.on("connect", () => {
+  console.log("Redis connecting...");
+});
+
+redisClient.on("ready", () => {
+  console.log("Redis fully ready");
+  redisReady = true;
+});
+
+redisClient.on("error", (err) => {
+  console.error("Redis error:", err.message);
+  redisReady = false;
+});
+
+// Explicitly connect Redis
+redisClient.connect().catch((err) => {
+  console.error("Failed to connect Redis:", err.message);
 });
 
 // app.set("trust proxy", 1);
@@ -92,6 +116,8 @@ app.set("trust proxy", 1);
 
 // Delay session middleware initialization until Redis is ready
 redisClient.once("ready", () => {
+  console.log("Initializing express-session middleware...");
+  
   app.use(session({
     store: new RedisStore({ client: redisClient }),
     secret:  process.env.JWT_SECRET,
@@ -104,6 +130,8 @@ redisClient.once("ready", () => {
       maxAge: 24 * 60 * 60 * 1000
     }
   }));
+  
+  console.log("express-session middleware initialized with Redis store");
 });
 
 
@@ -191,6 +219,11 @@ async function loadUserFromSession(req) {
 }
 // STEP 1: user submits email+username+password, we send OTP and store data in Redis (temporary)
 app.post('/register/request-otp', async (req, res) => {
+  // Guard: ensure Redis is ready before using it
+  if (!redisReady) {
+    return res.status(503).json({ message: "Redis not ready, try again" });
+  }
+
   const { email, username, password } = req.body;
 
   if (!email || !username || !password) {
@@ -247,6 +280,11 @@ app.post('/register/request-otp', async (req, res) => {
 
 // STEP 2: user sends email+username+otp, we verify and create account in Mongo
 app.post('/register', async (req, res) => {
+  // Guard: ensure Redis is ready before using it
+  if (!redisReady) {
+    return res.status(503).json({ message: "Redis not ready, try again" });
+  }
+
   const { email, username, otp } = req.body;
 
   if (!email || !username || !otp) {
