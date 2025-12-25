@@ -46,13 +46,15 @@ const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
-// Re-use Gmail for OTP emails
+// Configure Gmail SMTP with explicit port 587 (TLS/STARTTLS)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // upgrade later with STARTTLS
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
 });
 
 // Generate a 6-digit OTP
