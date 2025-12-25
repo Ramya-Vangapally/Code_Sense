@@ -525,58 +525,30 @@ function registerSessionRoutes(app) {
   app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
     const { subject, message, role } = req.body;
 
-    // Validate required fields
-    if (!subject || !message) {
-      return res.status(400).json({ message: 'Subject and message are required' });
-    }
-
     try {
-      // 1. Find all users with valid email addresses
+      // 1. Fetch users with valid emails
       const users = await Login.find({}, 'email');
-      const emails = users
-        .map(u => u.email)
-        .filter(e => e && e.trim()); // Filter out null/empty emails
-
+      const emails = users.map(u => u.email).filter(e => e && e.includes('@'));
+      
       if (emails.length === 0) {
-        return res.status(400).json({ message: "No users with email addresses found to email." });
+        return res.status(400).json({ message: "No users found." });
       }
-
-      // 2. Send email to all users using BCC (keeps email list private)
+      
+      console.log(`Sending email to ${emails.length} users...`);
+      
+      // 2. Send ONE email with everyone in BCC (Hidden recipients)
       await transporter.sendMail({
         from: process.env.SMTP_USER,
-        bcc: emails.join(','), // Send to everyone as BCC
+        bcc: emails,                // <--- This sends to everyone at once
         subject: subject,
         text: message,
         html: `<p>${message.replace(/\n/g, '<br>')}</p>`
       });
-
-      // 3. Log email history for admin records
-      try {
-        await EmailHistory.create({
-          subject,
-          recipients: emails.slice(0, 200), // Store first 200 for reference
-          recipientsCount: emails.length,
-          status: 'sent',
-          sentBy: req.session.user.username,
-          sentAt: new Date()
-        });
-      } catch (historyError) {
-        console.warn('Failed to record email history:', historyError?.message || historyError);
-      }
-
-      // 4. Return success response
-      res.json({ 
-        message: `Email successfully sent to ${emails.length} users!`,
-        recipientsCount: emails.length
-      });
-
+      
+      res.json({ message: "Bulk email sent successfully!" });
     } catch (error) {
-      console.error("❌ Bulk Email Error:", error.message);
-      console.error("Stack:", error.stack);
-      res.status(500).json({ 
-        message: "Failed to send emails.",
-        error: error.message 
-      });
+      console.error("Bulk Email Failed:", error);
+      res.status(500).json({ message: "Failed to send emails. Check server logs." });
     }
   });
 
