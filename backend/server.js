@@ -77,36 +77,33 @@ if (!process.env.REDIS_URL) {
 
 console.log("✓ Redis URL configured from environment");
 
-// Initialize Redis with Render-compatible settings
+// Initialize Redis with TLS enabled for Render Valkey
+// ioredis auto-connects, no manual connect() needed
 const redisClient = new Redis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 // Redis connection event handlers
 redisClient.on("connect", () => {
-  console.log("✓ Redis: Connected to Render Redis");
+  console.log("✓ Redis: Connected to Render Valkey");
 });
 
 redisClient.on("ready", () => {
-  console.log("✓ Redis: Connection ready");
+  console.log("✓ Redis: Connection ready and authenticated");
   redisReady = true;
 });
 
 redisClient.on("error", (err) => {
   console.error("❌ Redis connection error:", err.message);
-  console.error("   Details:", err.code);
+  console.error("   Code:", err.code);
   redisReady = false;
 });
 
 redisClient.on("close", () => {
   console.warn("⚠ Redis connection closed");
   redisReady = false;
-});
-
-// Begin connection attempt
-redisClient.connect().catch((err) => {
-  console.error("❌ Failed to initiate Redis connection:", err.message);
 });
 
 // app.set("trust proxy", 1);
