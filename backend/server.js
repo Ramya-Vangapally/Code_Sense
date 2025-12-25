@@ -106,8 +106,11 @@ redisClient.on("close", () => {
 
 // CORS — MUST come BEFORE routes
 app.use(cors({
-    origin:[ "http://localhost:5502",
-        "http://127.0.0.1:5502"],
+    origin:[ 
+        "http://localhost:5502",
+        "http://127.0.0.1:5502",
+        "https://code-sense-one.vercel.app"
+    ],
     credentials: true,
 }));
 
