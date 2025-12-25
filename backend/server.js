@@ -94,6 +94,16 @@ redisClient.connect().catch((err) => {
   console.error("Failed to connect Redis:", err.message);
 });
 
+console.log("Redis URL configured:", process.env.REDIS_URL ? "✓ Set" : "✗ NOT SET");
+
+redisClient.on("connecting", () => {
+  console.log("Redis: Attempting to connect...");
+});
+
+redisClient.on("reconnecting", () => {
+  console.log("Redis: Reconnecting attempt...");
+});
+
 // app.set("trust proxy", 1);
 
 // CORS — MUST come BEFORE routes
