@@ -77,13 +77,9 @@ if (!process.env.REDIS_URL) {
 
 console.log("✓ Redis URL configured from environment");
 
-// Initialize Redis with TLS enabled for Render Valkey
+// Initialize Redis for Render internal network
 // ioredis auto-connects, no manual connect() needed
-const redisClient = new Redis(process.env.REDIS_URL, {
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+const redisClient = new Redis(process.env.REDIS_URL);
 
 // Redis connection event handlers
 redisClient.on("connect", () => {
