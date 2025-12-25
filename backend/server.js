@@ -643,6 +643,42 @@ function registerSessionRoutes(app) {
     }
   });
 
+  // Save new history entry (code explanation action)
+  app.post('/add-history', async (req, res) => {
+    const { username, action, language, role } = req.body;
+
+    // Validate required fields
+    if (!username || !action || !language || !role) {
+      return res.status(400).json({ 
+        message: "Missing required fields: username, action, language, role" 
+      });
+    }
+
+    try {
+      const historyEntry = new User_history({
+        username,
+        action,
+        language,
+        role,
+        time: new Date()
+      });
+
+      await historyEntry.save();
+
+      res.status(201).json({
+        success: true,
+        message: "History entry saved successfully",
+        data: historyEntry
+      });
+    } catch (error) {
+      console.error("Error saving history:", error);
+      res.status(500).json({
+        message: "Failed to save history",
+        error: error.message
+      });
+    }
+  });
+
   // Admin: create user endpoint
   app.post('/admin/create-user', requireAdmin, async (req, res) => {
     const { email, username, password, role } = req.body;
