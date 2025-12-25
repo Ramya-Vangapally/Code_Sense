@@ -38,8 +38,10 @@ const adminHistoryCounter = new client.Counter({
   help: 'Total number of admin history actions',
   labelNames: ['action'],
 });
-const bcrypt = require("bcrypt");
+// Load environment variables BEFORE any service initialization
 require("dotenv").config();
+
+const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(express.json());
@@ -58,47 +60,53 @@ function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-
-// Redis Session
+// ===== REDIS CLIENT INITIALIZATION =====
+// Single Redis client instance - ONLY via Render internal network
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const Redis = require("ioredis");
 
-// Redis readiness flag
 let redisReady = false;
 
-const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  lazyConnect: true
+// Validate Redis URL is set from environment (Render internal)
+if (!process.env.REDIS_URL) {
+  console.error("❌ REDIS_URL environment variable is NOT SET");
+  console.error("Cannot proceed without Redis connection URL from Render");
+  process.exit(1);
+}
+
+console.log("✓ Redis URL configured from environment");
+
+// Initialize Redis with Render-compatible settings
+const redisClient = new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false
 });
 
-// Redis lifecycle listeners
+// Redis connection event handlers
 redisClient.on("connect", () => {
-  console.log("Redis connecting...");
+  console.log("✓ Redis: Connected to Render Redis");
 });
 
 redisClient.on("ready", () => {
-  console.log("Redis fully ready");
+  console.log("✓ Redis: Connection ready");
   redisReady = true;
 });
 
 redisClient.on("error", (err) => {
-  console.error("Redis error:", err.message);
+  console.error("❌ Redis connection error:", err.message);
+  console.error("   Details:", err.code);
   redisReady = false;
 });
 
-// Explicitly connect Redis
+redisClient.on("close", () => {
+  console.warn("⚠ Redis connection closed");
+  redisReady = false;
+});
+
+// Begin connection attempt
 redisClient.connect().catch((err) => {
-  console.error("Failed to connect Redis:", err.message);
-});
-
-console.log("Redis URL configured:", process.env.REDIS_URL ? "✓ Set" : "✗ NOT SET");
-
-redisClient.on("connecting", () => {
-  console.log("Redis: Attempting to connect...");
-});
-
-redisClient.on("reconnecting", () => {
-  console.log("Redis: Reconnecting attempt...");
+  console.error("❌ Failed to initiate Redis connection:", err.message);
 });
 
 // app.set("trust proxy", 1);
