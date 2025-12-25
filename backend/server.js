@@ -774,9 +774,9 @@ redisClient.once("ready", () => {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false,          
+      secure: true,           // REQUIRED for Render (HTTPS)
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: 'none',       // REQUIRED for Vercel -> Render communication
       maxAge: 24 * 60 * 60 * 1000
     }
   }));
