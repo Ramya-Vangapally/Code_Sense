@@ -523,50 +523,61 @@ function registerSessionRoutes(app) {
 
   // Bulk email endpoint
   app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
-    const { recipients, subject, message } = req.body;
+    const { subject, message, role } = req.body;
 
-    if (!subject || !message)
-      return res.status(400).json({ message: 'Subject and message required' });
-
-    const adminEmail =
-      (req.session?.user?.email) ||
-      process.env.ADMIN_EMAIL ||
-      process.env.SMTP_USER;
-
-    let recipientList = [];
-
-    if (!recipients || recipients === 'all') {
-      const users = await Login.find({}, { email: 1, _id: 0 });
-      recipientList = users.map(u => u.email);
-    } else if (Array.isArray(recipients)) {
-      recipientList = recipients;
+    // Validate required fields
+    if (!subject || !message) {
+      return res.status(400).json({ message: 'Subject and message are required' });
     }
-
-    if (recipientList.length === 0)
-      return res.status(400).json({ message: "No recipients" });
-
-    recipientList.forEach(email => {
-      queueEmail(
-        email,
-        subject,
-        message.replace(/\n/g, "<br>"),
-        adminEmail
-      );
-    });
 
     try {
-      await EmailHistory.create({
-        subject,
-        recipients: recipientList.slice(0, 200),
-        recipientsCount: recipientList.length,
-        status: 'sent',
-        sentBy: req.session.user.username
-      });
-    } catch (e) {
-      console.warn('Failed to record email history:', e?.message || e);
-    }
+      // 1. Find all users with valid email addresses
+      const users = await Login.find({}, 'email');
+      const emails = users
+        .map(u => u.email)
+        .filter(e => e && e.trim()); // Filter out null/empty emails
 
-    return res.json({ message: "Emails queued successfully (worker will send them)" });
+      if (emails.length === 0) {
+        return res.status(400).json({ message: "No users with email addresses found to email." });
+      }
+
+      // 2. Send email to all users using BCC (keeps email list private)
+      await transporter.sendMail({
+        from: process.env.SMTP_USER,
+        bcc: emails.join(','), // Send to everyone as BCC
+        subject: subject,
+        text: message,
+        html: `<p>${message.replace(/\n/g, '<br>')}</p>`
+      });
+
+      // 3. Log email history for admin records
+      try {
+        await EmailHistory.create({
+          subject,
+          recipients: emails.slice(0, 200), // Store first 200 for reference
+          recipientsCount: emails.length,
+          status: 'sent',
+          sentBy: req.session.user.username,
+          sentAt: new Date()
+        });
+      } catch (historyError) {
+        console.warn('Failed to record email history:', historyError?.message || historyError);
+      }
+
+      // 4. Return success response
+      res.json({ 
+        message: `Email successfully sent to ${emails.length} users!`,
+        recipientsCount: emails.length
+      });
+
+    } catch (error) {
+      console.error("❌ Bulk Email Error:", error.message);
+      console.error("Stack:", error.stack);
+      res.status(500).json({ 
+        message: "Failed to send emails.",
+        error: error.message 
+      });
+    }
   });
 
   // Email history endpoint
