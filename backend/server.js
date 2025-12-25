@@ -78,8 +78,8 @@ if (!process.env.REDIS_URL) {
 console.log("✓ Redis URL configured from environment");
 
 // Initialize Redis for Render internal network
-// ioredis auto-connects, no manual connect() needed
-const redisClient = new Redis(process.env.REDIS_URL);
+// Force IPv4 to avoid IPv6 AggregateError on Render
+const redisClient = new Redis(process.env.REDIS_URL, { family: 4 });
 
 // Redis connection event handlers
 redisClient.on("connect", () => {
