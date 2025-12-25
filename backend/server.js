@@ -46,11 +46,9 @@ const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
-// Configure Gmail SMTP with explicit port 587 (TLS/STARTTLS)
+// Use Gmail service - auto-configures Host, Port (587/465), and Security
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // upgrade later with STARTTLS
+    service: 'gmail',
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
