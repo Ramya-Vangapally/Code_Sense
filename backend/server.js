@@ -631,6 +631,49 @@ function registerSessionRoutes(app) {
       res.status(400).json({ message: e });
     }
   });
+
+  // Admin: create user endpoint
+  app.post('/admin/create-user', requireAdmin, async (req, res) => {
+    const { email, username, password, role } = req.body;
+
+    if (!email || !username || !password) {
+      return res.status(400).json({ message: "Email, username, and password are required" });
+    }
+
+    try {
+      const existingUser = await Login.findOne({
+        $or: [{ email: email.toLowerCase() }, { username }]
+      });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email or username already registered" });
+      }
+
+      const hashed = await bcrypt.hash(password, 10);
+      const newUser = await Login.create({
+        email: email.toLowerCase(),
+        username,
+        displayName: username,
+        password: hashed,
+        preferredLanguage: "Auto",
+        role: role === "admin" ? "admin" : "user"
+      });
+
+      // PROMETHEUS: increment registration counter here
+      registrationCounter.inc();
+
+      return res.json({
+        message: "User created successfully",
+        user: {
+          username: newUser.username,
+          email: newUser.email,
+          role: newUser.role
+        }
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({ message: "Unable to create user", error: e.message });
+    }
+  });
 }
 
 function requireLogin(req, res, next) {
@@ -734,49 +777,6 @@ redisClient.once("ready", () => {
 });
 
 const generateToken = require("./middleware/generateToken");
-
-// Routes that don't require sessions (defined at top-level)
-app.post('/admin/create-user', requireAdmin, async (req, res) => {
-  const { email, username, password, role } = req.body;
-
-  if (!email || !username || !password) {
-    return res.status(400).json({ message: "Email, username, and password are required" });
-  }
-
-  try {
-    const existingUser = await Login.findOne({
-      $or: [{ email: email.toLowerCase() }, { username }]
-    });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email or username already registered" });
-    }
-
-    const hashed = await bcrypt.hash(password, 10);
-    const newUser = await Login.create({
-      email: email.toLowerCase(),
-      username,
-        displayName: username,
-      password: hashed,
-        preferredLanguage: "Auto",
-      role: role === "admin" ? "admin" : "user"
-    });
-
-    // PROMETHEUS: increment registration counter here
-    registrationCounter.inc();
-
-    return res.json({
-      message: "User created successfully",
-      user: {
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role
-      }
-    });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ message: "Unable to create user", error: e.message });
-  }
-});
 
 const { OAuth2Client } = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
