@@ -89,18 +89,21 @@ app.use(cors({
 // Session config
 app.set("trust proxy", 1);
 
-app.use(session({
-  store: new RedisStore({ client: redisClient }),
-  secret: "super-secret-key",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false,          
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
+// Delay session middleware initialization until Redis is ready
+redisClient.once("ready", () => {
+  app.use(session({
+    store: new RedisStore({ client: redisClient }),
+    secret: "super-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,          
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    }
+  }));
+});
 
 
 app.get("/test-session", (req, res) => {
