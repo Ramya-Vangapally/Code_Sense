@@ -682,10 +682,20 @@ html[data-theme="light"] .profile-menu button:hover {
       }
   });
 
-  // Logout via backend session
+  // Logout via backend session (uses API_BASE from app.js IIFE scope)
   document.getElementById('logout-btn').addEventListener('click', async () => {
       try {
-          await fetch('https://code-sense-bxqi.onrender.com/logout', {
+          // API_BASE is available through window.logout() function from app.js
+          // This inline script runs after app.js, so we can access window functions
+          if (window.logout) {
+              await window.logout();
+              return;
+          }
+          // Fallback: use app.js's API_BASE pattern
+          const apiBase = window.location.hostname === "127.0.0.1"
+              ? "http://127.0.0.1:5000"
+              : "https://code-sense-bxqi.onrender.com";
+          await fetch(apiBase + '/logout', {
               method: 'POST',
               credentials: 'include'
           });
