@@ -46,13 +46,16 @@ const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
-// Use Gmail service - auto-configures Host, Port (587/465), and Security
+// Configure Gmail SMTP with SSL port 465 (more reliable for Render)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,  // Crucial for Render
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    connectionTimeout: 10000
 });
 
 // Generate a 6-digit OTP
@@ -608,6 +611,20 @@ function registerSessionRoutes(app) {
       }
 
       console.log(`✓ Added ${emailList.length} emails to queue`);
+
+      // Save email history for admin dashboard
+      try {
+        await EmailHistory.create({
+          subject: subject,
+          recipients: emailList.length + " users",  // Save count like "5 users"
+          sentDate: new Date(),
+          status: "Sent"
+        });
+        console.log(`✓ Email history saved for ${emailList.length} users`);
+      } catch (historyErr) {
+        console.error("History Save Error:", historyErr.message);
+        // Don't fail the whole request if history save fails
+      }
 
       // Return immediately (don't wait for emails to send)
       res.json({ 
