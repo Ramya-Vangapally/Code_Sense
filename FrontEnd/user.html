@@ -685,7 +685,7 @@ html[data-theme="light"] .profile-menu button:hover {
   // Logout via backend session
   document.getElementById('logout-btn').addEventListener('click', async () => {
       try {
-          await fetch('http://localhost:5000/logout', {
+          await fetch('https://code-sense-bxqi.onrender.com/logout', {
               method: 'POST',
               credentials: 'include'
           });
