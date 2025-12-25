@@ -68,9 +68,6 @@ const Redis = require("ioredis");
 let redisReady = false;
 
 const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  tls: {
-    rejectUnauthorized: false
-  },
   lazyConnect: true
 });
 
