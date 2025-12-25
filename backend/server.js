@@ -65,6 +65,7 @@ function generateOtp() {
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const Redis = require("ioredis");
+const Bull = require("bull");
 
 let redisReady = false;
 
@@ -100,6 +101,47 @@ redisClient.on("error", (err) => {
 redisClient.on("close", () => {
   console.warn("⚠ Redis connection closed");
   redisReady = false;
+});
+
+// ===== BULL EMAIL QUEUE SETUP =====
+// Create email queue using Redis (with IPv4 support for Render)
+const emailQueue = new Bull('email-queue', {
+  redis: {
+    host: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).hostname : 'localhost',
+    port: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).port || 6379 : 6379,
+    password: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).password : undefined,
+    family: 4  // Force IPv4 for Render compatibility
+  }
+});
+
+// Define email queue worker
+emailQueue.process(async (job) => {
+  const { email, subject, message } = job.data;
+  
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: subject,
+      text: message,
+      html: `<p>${message.replace(/\n/g, '<br>')}</p>`
+    });
+    
+    console.log(`✓ Email sent to ${email}`);
+    return { success: true, email };
+  } catch (error) {
+    console.error(`❌ Failed to send email to ${email}:`, error.message);
+    throw error; // Retry the job
+  }
+});
+
+// Email queue event handlers
+emailQueue.on('completed', (job) => {
+  console.log(`Email job ${job.id} completed`);
+});
+
+emailQueue.on('failed', (job, error) => {
+  console.error(`Email job ${job.id} failed:`, error.message);
 });
 
 // app.set("trust proxy", 1);
@@ -523,32 +565,59 @@ function registerSessionRoutes(app) {
 
   // Bulk email endpoint
   app.post('/admin/bulk-email', requireAdmin, async (req, res) => {
-    const { subject, message, role } = req.body;
+    const { subject, message, recipients } = req.body;
+
+    // Validate required fields
+    if (!subject || !message) {
+      return res.status(400).json({ message: "Subject and message are required." });
+    }
 
     try {
-      // 1. Fetch users with valid emails
-      const users = await Login.find({}, 'email');
-      const emails = users.map(u => u.email).filter(e => e && e.includes('@'));
-      
-      if (emails.length === 0) {
-        return res.status(400).json({ message: "No users found." });
+      let emailList = [];
+
+      // Logic: Check if specific recipients were provided
+      if (recipients && Array.isArray(recipients) && recipients.length > 0) {
+        // Targeted send: Use provided recipient list
+        emailList = recipients.filter(email => email && email.includes('@'));
+        console.log(`📧 Targeted send to ${emailList.length} specific users`);
+      } else {
+        // Bulk send: Fetch all users from database
+        const users = await Login.find({}, 'email');
+        emailList = users
+          .map(u => u.email)
+          .filter(e => e && e.includes('@'));
+        console.log(`📧 Bulk send to all ${emailList.length} users`);
       }
-      
-      console.log(`Sending email to ${emails.length} users...`);
-      
-      // 2. Send ONE email with everyone in BCC (Hidden recipients)
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        bcc: emails,                // <--- This sends to everyone at once
-        subject: subject,
-        text: message,
-        html: `<p>${message.replace(/\n/g, '<br>')}</p>`
+
+      if (emailList.length === 0) {
+        return res.status(400).json({ message: "No valid email addresses found." });
+      }
+
+      // Add each email to the queue
+      for (const email of emailList) {
+        await emailQueue.add(
+          { email, subject, message },
+          { 
+            attempts: 3,           // Retry up to 3 times
+            backoff: {
+              type: 'exponential',
+              delay: 2000          // Start with 2 second delay
+            }
+          }
+        );
+      }
+
+      console.log(`✓ Added ${emailList.length} emails to queue`);
+
+      // Return immediately (don't wait for emails to send)
+      res.json({ 
+        message: `${emailList.length} emails added to queue and will be sent shortly!`,
+        count: emailList.length
       });
-      
-      res.json({ message: "Bulk email sent successfully!" });
+
     } catch (error) {
-      console.error("Bulk Email Failed:", error);
-      res.status(500).json({ message: "Failed to send emails. Check server logs." });
+      console.error("❌ Bulk Email Queue Error:", error.message);
+      res.status(500).json({ message: "Failed to queue emails. Check server logs." });
     }
   });
 
