@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first'); // Force IPv4 for Google and external APIs
+
 const connectDB = require("./db");
 const express = require("express");
 const cors = require("cors");
