@@ -615,7 +615,7 @@ function registerSessionRoutes(app) {
           subject: subject,
           recipients: emailList.length + " users",  // Save count like "5 users"
           sentDate: new Date(),
-          status: "Sent"
+          status: "sent"
         });
         console.log(`✓ Email history saved for ${emailList.length} users`);
       } catch (historyErr) {
