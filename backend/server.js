@@ -46,15 +46,18 @@ const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
-// Force SSL Connection - Use port 465 with explicit secure setting
+// Use Port 587 (TLS/STARTTLS) - More reliable for Render
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // Use SSL
+    port: 587,            // Standard Port with STARTTLS
+    secure: false,        // Must be false for Port 587
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    tls: {
+        rejectUnauthorized: false // Helps bypass some strict server checks
+    }
 });
 
 // Generate a 6-digit OTP
