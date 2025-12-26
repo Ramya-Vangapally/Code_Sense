@@ -46,16 +46,13 @@ const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 const nodemailer = require('nodemailer');
-// Configure Gmail SMTP with SSL port 465 (more reliable for Render)
+// Use Gmail service - auto-configures host, port, and security settings
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,  // Crucial for Render
+    service: 'gmail',
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
-    connectionTimeout: 10000
 });
 
 // Generate a 6-digit OTP
