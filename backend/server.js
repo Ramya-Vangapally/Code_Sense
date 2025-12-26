@@ -13,6 +13,12 @@ const EmailHistory = require("./models/EmailHistory.js");
 const ModelSettings = require("./models/ModelSettings.js");
 const client = require('prom-client');
 
+// Brevo API Setup
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+
 client.collectDefaultMetrics({ prefix: 'code3sense_' });
 
 const loginCounter = new client.Counter({
@@ -49,20 +55,6 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(express.json());
-const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,             // Secure SSL Port
-    secure: true,          // MUST be true for 465
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    family: 4              // FORCE IPv4 for this specific connection
-});
 
 // Generate a 6-digit OTP
 function generateOtp() {
@@ -123,20 +115,22 @@ const emailQueue = new Bull('email-queue', {
   }
 });
 
-// Define email queue worker
+// Define email queue worker with Brevo API
 emailQueue.process(async (job) => {
   const { email, subject, message } = job.data;
   
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: email,
-      subject: subject,
-      text: message,
-      html: `<p>${message.replace(/\n/g, '<br>')}</p>`
-    });
+    const transactionalEmailsApi = new SibApiV3Sdk.TransactionalEmailsApi();
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     
-    console.log(`✓ Email sent to ${email}`);
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = `<p>${message.replace(/\n/g, '<br>')}</p>`;
+    sendSmtpEmail.sender = { email: 'vangapallyramyaa@gmail.com', name: 'Code Sense' };
+    sendSmtpEmail.to = [{ email: email }];
+    
+    await transactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
+    
+    console.log(`✓ Email sent to ${email} via Brevo`);
     return { success: true, email };
   } catch (error) {
     console.error(`❌ Failed to send email to ${email}:`, error.message);
