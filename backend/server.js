@@ -125,7 +125,7 @@ emailQueue.process(async (job) => {
     
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = `<p>${message.replace(/\n/g, '<br>')}</p>`;
-    sendSmtpEmail.sender = { email: 'vangapallyramyaa@gmail.com', name: 'Code Sense' };
+    sendSmtpEmail.sender = { email: 'codesenseg811@gmail.com', name: 'Code Sense' };
     sendSmtpEmail.to = [{ email: email }];
     
     await transactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
